@@ -1,0 +1,16 @@
+<mat-card class="buggy-card" *ngIf="buggy">
+    <mat-card-header>
+      <mat-card-title-group>
+        <mat-card-title>{{ buggy.name }}</mat-card-title>
+        <mat-card-subtitle>{{ buggy.org }}</mat-card-subtitle>
+        <img mat-card-sm-image *ngIf="buggy.smugmugSlug" src="{{buggy.smugmugSlug|buggyThumbnail}}">
+      </mat-card-title-group>
+    </mat-card-header>
+    <mat-card-content>
+      <nav class="button-row">
+        <button mat-flat-button color="primary" (click)="edit.emit(buggy)">Edit</button>
+        <button mat-flat-button color="{{buggy.active ? 'primary' : 'inactive'}}" (click)="toggleActive.emit(buggy)">Active</button>
+        <button mat-flat-button color="warn"(click)="delete.emit(buggy)">Delete</button>
+      </nav>
+    </mat-card-content>
+</mat-card>

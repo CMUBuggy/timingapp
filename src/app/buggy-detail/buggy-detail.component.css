@@ -1,0 +1,17 @@
+.buggy-card {
+    max-width: 400px;
+    margin-bottom: 8px;
+}
+
+nav.button-row {
+  margin-top: 4px;
+}
+
+.button-row button,
+.button-row a {
+  margin-right: 8px;
+}
+
+.mat-inactive {
+  background-color: gainsboro;
+}

@@ -1,0 +1,23 @@
+<h2>Buggy Details</h2>
+<mat-form-field>
+    <mat-label>Name</mat-label>
+    <input matInput cdkFocusInitial [(ngModel)]="workingBuggy.name" />
+</mat-form-field>
+  
+<mat-form-field>
+    <mat-label>Org</mat-label>
+    <input matInput [(ngModel)]="workingBuggy.org" />
+</mat-form-field>
+
+<mat-form-field>
+    <mat-label>SmugMug Slug</mat-label>
+    <mat-hint>e.g. "i-tG9HFN6"</mat-hint>
+    <input matInput [(ngModel)]="workingBuggy.smugmugSlug" />
+</mat-form-field>
+
+<img *ngIf="workingBuggy.smugmugSlug" src="{{workingBuggy.smugmugSlug|buggyThumbnail}}">
+
+<div mat-dialog-actions>
+    <button mat-button [mat-dialog-close]="{ buggy: workingBuggy }">OK</button>
+    <button mat-button (click)="cancel()">Cancel</button>
+</div>

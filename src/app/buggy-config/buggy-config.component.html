@@ -1,0 +1,19 @@
+<h2>Buggy Config</h2>
+
+<button (click)="newBuggy()" mat-button>
+    <mat-icon>add</mat-icon> Add Buggy
+</button>
+
+<mat-form-field>
+<mat-label>TODO: org filter</mat-label>
+<mat-select>
+  <mat-option value="CIA">CIA</mat-option>
+  <mat-option value="Fringe">Fringe</mat-option>
+  <mat-option value="SDC">SDC</mat-option>
+</mat-select>
+</mat-form-field>
+
+<buggy-detail *ngFor="let b of buggies" [buggy]="b"
+              (edit)="editBuggy($event)"
+              (toggleActive)="toggleActive($event)"
+              (delete)="deleteBuggy($event)"></buggy-detail>

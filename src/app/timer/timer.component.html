@@ -1,0 +1,28 @@
+<h2>Roll Timing</h2>
+
+<div>
+    <mat-form-field>
+      <mat-label>Position</mat-label>
+      <mat-select>
+        <mat-option value="0-start">Start Line</mat-option>
+        <mat-option value="1-trans12">1-2 Transition</mat-option>
+        <mat-option value="2-cross">Crosswalk</mat-option>
+        <mat-option value="3-stop">Stop Sign</mat-option>
+        <mat-option value="4-chute">Chute Flag</mat-option>
+        <mat-option value="5-hill3">Hill 3 Line</mat-option>
+        <mat-option value="6-trans34">3-4 Transition</mat-option>
+        <mat-option value="7-trans45">4-5 Transition</mat-option>
+        <mat-option value="8-finish">Finish Line</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-button-toggle-group style="margin:8px" [(ngModel)]="showAllUnfinished" multiple>
+      <mat-button-toggle value="true">Show All Unfinished</mat-button-toggle>
+    </mat-button-toggle-group>
+</div>
+<div>
+<button (click)="addRoll()" mat-button>
+    <mat-icon>add</mat-icon> Schedule Roll
+</button>
+</div>
+
+<timer-detail *ngFor="let t of timers" [timer]="t"></timer-detail>

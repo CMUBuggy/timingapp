@@ -1,0 +1,11 @@
+<h2>View Data</h2>
+<mat-form-field>
+  <mat-label>Rolls From Date</mat-label>
+  <input matInput [matDatepicker]="picker" [formControl]="displayDate">
+  <mat-hint>MM/DD/YYYY</mat-hint>
+  <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+  <mat-datepicker #picker></mat-datepicker>
+</mat-form-field>
+<button mat-flat-button color="primary" style="margin: 8px" (click)="getCsv()">Get CSV</button>
+<hr>
+Data Goes Here!
