@@ -8,4 +8,8 @@
 </mat-form-field>
 <button mat-flat-button color="primary" style="margin: 8px" (click)="getCsv()">Get CSV</button>
 <hr>
-Data Goes Here!
+
+{{ dateString }}
+
+<data-view-entry *ngFor="let t of timers$ | async" [timer]="t"></data-view-entry>
+<data-view-entry></data-view-entry>

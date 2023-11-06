@@ -5,19 +5,26 @@ import { MatDialog } from '@angular/material/dialog';
 import { BuggyDetail } from '../buggy-detail/buggy-detail';
 import { BuggyDialogComponent, BuggyDialogResult } from '../buggy-dialog/buggy-dialog.component';
 
+import { Firestore, CollectionReference, collection, collectionData, doc,
+         addDoc, deleteDoc, setDoc,
+         query, orderBy } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
+
 @Component({
   selector: 'app-buggy-config',
   templateUrl: './buggy-config.component.html',
   styleUrls: ['./buggy-config.component.css']
 })
 export class BuggyConfigComponent {
-  buggies: BuggyDetail[] = [
-    { name: "Rage", org: "SDC", smugmugSlug: "i-cdD3Qrq", active: true },
-    { name: "Conquest", org: "CIA", smugmugSlug: "i-dPKQMJF", active: false },
-    { name: "Mystery", org: "Robobuggy", active: true }
-  ]
+  buggyCollection : CollectionReference = collection(this.store, 'Buggies');
+  buggyQuery = query(this.buggyCollection, orderBy("org"), orderBy("name"));
+  buggies$ = collectionData(this.buggyQuery, { idField: 'id' }) as Observable<BuggyDetail[]>;
 
-  constructor(private dialog: MatDialog) {}
+  // error handling through messages, eventually
+  //todo$ = this.todoClean$.pipe(catchError(err => of([{id: 'ERR', title: 'Error', description: err}])));
+
+
+  constructor(private dialog: MatDialog, private store: Firestore) {}
 
   newBuggy() : void {
     const dialogRef = this.dialog.open(BuggyDialogComponent, {
@@ -32,7 +39,8 @@ export class BuggyConfigComponent {
         if (!result) {
           return;
         }
-        this.buggies.push(result.buggy);
+        //this.buggies.push(result.buggy);
+        addDoc(this.buggyCollection, result.buggy);
       });
   }
 
@@ -47,21 +55,26 @@ export class BuggyConfigComponent {
       if (!result) {
         return;
       }
+      // Note: Not a transaction, force to fit the current UI.
+      setDoc(doc(this.buggyCollection, buggy.id), result.buggy);
+      /*
       const taskIndex = this.buggies.indexOf(buggy);
       this.buggies[taskIndex] = result.buggy;
+      */
     });
   }
 
   toggleActive(buggy : BuggyDetail) {
+    // Note: Not a transaction, force to fit the current UI.
     buggy.active = !buggy.active;
+    setDoc(doc(this.buggyCollection, buggy.id), buggy);
   }
 
   deleteBuggy(buggy: BuggyDetail) {
+    /*
     const taskIndex = this.buggies.indexOf(buggy);
     this.buggies.splice(taskIndex, 1);
-  }
-
-  newTask() {
-    return;
+    */
+    deleteDoc(doc(this.buggyCollection, buggy.id));
   }
 }

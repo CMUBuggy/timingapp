@@ -1,5 +1,5 @@
 
-<mat-card class="timer-card" *ngIf="timer">
+<mat-card class="timer-card" *ngIf="timer" style="margin:2em">
     <mat-card-header>
         <mat-card-title-group>
           <mat-card-title>{{ timer.buggy.name }}</mat-card-title>
@@ -9,7 +9,7 @@
       </mat-card-header>
       <mat-card-content>
         <nav class="button-row">
-          <button mat-flat-button color="warn" (click)="delete.emit(timer)">Scratch</button>
+          <button mat-flat-button color="warn" (click)="scratch.emit(timer)">Scratch</button>
         </nav>
       </mat-card-content>
 </mat-card>

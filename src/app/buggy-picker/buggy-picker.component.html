@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Select Buggy</h2>
 
 <mat-dialog-content>
-<ng-template ngFor let-buggy [ngForOf]="buggies">
+<ng-template ngFor let-buggy [ngForOf]="buggies$ | async">
   <div (click)="select(buggy)">
     <img *ngIf="buggy.smugmugSlug; else noBuggyImage" src="{{buggy.smugmugSlug|buggyThumbnail}}">
     <ng-template #noBuggyImage>{{buggy.name}}</ng-template>

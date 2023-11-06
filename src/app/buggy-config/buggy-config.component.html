@@ -13,7 +13,8 @@
 </mat-select>
 </mat-form-field>
 
-<buggy-detail *ngFor="let b of buggies" [buggy]="b"
+<p *ngIf="(buggies$ | async)?.length === 0">No Buggies Configured</p>
+<buggy-detail *ngFor="let b of buggies$ | async" [buggy]="b"
               (edit)="editBuggy($event)"
               (toggleActive)="toggleActive($event)"
               (delete)="deleteBuggy($event)"></buggy-detail>

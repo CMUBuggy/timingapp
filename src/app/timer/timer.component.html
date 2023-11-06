@@ -3,7 +3,7 @@
 <div>
     <mat-form-field>
       <mat-label>Position</mat-label>
-      <mat-select>
+      <mat-select [(ngModel)]="courseLocation">
         <mat-option value="0-start">Start Line</mat-option>
         <mat-option value="1-trans12">1-2 Transition</mat-option>
         <mat-option value="2-cross">Crosswalk</mat-option>
@@ -25,4 +25,4 @@
 </button>
 </div>
 
-<timer-detail *ngFor="let t of timers" [timer]="t"></timer-detail>
+<timer-detail *ngFor="let t of timers$ | async" [timer]="t" (scratch)="scratchRoll($event)" (click)="markTime(t)"></timer-detail>

@@ -1,10 +1,16 @@
+// Angular
+import { DatePipe } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+// Firebase
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { environment } from '../environments/environment';
 
 // Material
 import { MatNativeDateModule } from '@angular/material/core';
@@ -32,6 +38,7 @@ import { BuggyDialogComponent } from './buggy-dialog/buggy-dialog.component';
 import { TimerDetailComponent } from './timer-detail/timer-detail.component';
 import { DataViewComponent } from './data-view/data-view.component';
 import { BuggyPickerComponent } from './buggy-picker/buggy-picker.component';
+import { DataViewEntryComponent } from './data-view-entry/data-view-entry.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +53,8 @@ import { BuggyPickerComponent } from './buggy-picker/buggy-picker.component';
     BuggyDialogComponent,
     TimerDetailComponent,
     DataViewComponent,
-    BuggyPickerComponent
+    BuggyPickerComponent,
+    DataViewEntryComponent
   ],
   imports: [
     AppRoutingModule,
@@ -67,9 +75,12 @@ import { BuggyPickerComponent } from './buggy-picker/buggy-picker.component';
     MatIconModule,
     MatInputModule,
     MatToolbarModule,
-    MatSelectModule
+    MatSelectModule,
+
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideFirestore(() => getFirestore())
   ],
-  providers: [],
+  providers: [DatePipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
