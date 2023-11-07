@@ -25,9 +25,10 @@ export interface TimerDetail {
 }
 
 // TODO seems this should be in a more common place?
-const siteNames = ["Start", "1-2 Transition", "Crosswalk",
-                   "Stop Sign", "Chute Flag", "Hill 3 Line",
-                   "3-4 Transition", "4-5 Transition", "Finish Line"];
+export const TIMING_SITE_NAMES = ["Start", "1-2 Transition", "Crosswalk",
+                                  "Stop Sign", "Chute Flag", "Hill 3 Line",
+                                  "3-4 Transition", "4-5 Transition",
+                                  "Finish Line"];
 
 export class ExtendedTimerDetail {
     // Number of station where buggy was last seen (corresponds to db.absoluteTimes)
@@ -50,7 +51,7 @@ export class ExtendedTimerDetail {
             this.lastSeenAt = -1;
             this.lastSeenAtString = "Not Started"
         } else {
-            this.lastSeenAtString = siteNames[this.lastSeenAt];
+            this.lastSeenAtString = TIMING_SITE_NAMES[this.lastSeenAt];
         }
     }
 }

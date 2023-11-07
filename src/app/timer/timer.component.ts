@@ -13,7 +13,7 @@ import { Observable, pipe, map} from 'rxjs';
 
 import { BuggyPickerComponent, BuggyPickerResult } from '../buggy-picker/buggy-picker.component';
 
-import { CourseTimes, TimerDetail, ExtendedTimerDetail } from '../timer-detail/timer-detail';
+import { TIMING_SITE_NAMES, CourseTimes, TimerDetail, ExtendedTimerDetail } from '../timer-detail/timer-detail';
 
 @Component({
   selector: 'app-timer',
@@ -96,28 +96,50 @@ export class TimerComponent {
       });
   }
 
-  markTime(timer: TimerDetail) {
+  async markTime(timer: TimerDetail) {
+    // TODO better error handling (messages in UI, not just console log)
     if (this.courseLocationNumeric < 0 || this.courseLocationNumeric > 8) {
-      // TODO better error handling (messages?)
       console.log("unknown location tag in marktime: " + this.courseLocationNumeric)
       return;
     }
 
-    // TODO Transactionally update this time field.
-    // TODO: Fail update if this or downstream time has arrived already
-    // TODO: Fail if roll is now scratched
-    // TOOD: Fail if roll is unstarted and we aren't a starter location (0 or 2)
+    // TODO: Fail if roll is unstarted and we aren't a starter location (0 or 2)
     const docRef = doc(this.timerCollection, timer.id);
     const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
-    console.log("Marking time for: " + timer.id + " at " + this.courseLocation + " via " + updateKey);
-    
-    let myUpdate : any = { [updateKey]: serverTimestamp() };
-    if (this.courseLocationNumeric == 8) {
-      // Logged time at finish line, we're done!
-      myUpdate.completed = true;
-    }
+    const txnCourseLocation = this.courseLocationNumeric;
+    console.log("Marking time for: " + timer.id + " at " +
+                txnCourseLocation + " via " + updateKey);
 
-    updateDoc(docRef, myUpdate);
+    try {
+      await runTransaction(this.store, async(txn) => {
+        const snap = await txn.get(docRef);
+        if (!snap.exists()) {
+          throw "Timer" + timer.id + "doesn't exist?";
+        }
+
+        const t = snap.data() as TimerDetail;
+        if (t.completed) {
+          return Promise.reject("Roll " + t.id + " Already Completed")
+        }
+
+        const et = new ExtendedTimerDetail(t);
+        if (et.lastSeenAt != null && et.lastSeenAt >= txnCourseLocation) {
+          return Promise.reject("Roll " + timer.id + " has data at " +
+                                et.lastSeenAtString + " update failed here at " +
+                                TIMING_SITE_NAMES[txnCourseLocation]);
+        }
+
+        let myUpdate : any = { [updateKey]: serverTimestamp() };
+        if (txnCourseLocation == 8) {
+          // Logged time at finish line, we're done!
+          myUpdate.completed = true;
+        }
+    
+        txn.update(docRef, myUpdate);
+      });
+    } catch (e) {
+      console.log("Mark Time Transaction Failed: ", e);
+    }
   }
 
   async scratchRoll(timer: TimerDetail) {
@@ -128,15 +150,16 @@ export class TimerComponent {
 
     try {
       await runTransaction(this.store, async(txn) => {
-        const t = await txn.get(docRef);
-        if (!t.exists()) {
+        const snap = await txn.get(docRef);
+        if (!snap.exists()) {
           throw "Timer" + timer.id + "doesn't exist?";
         }
 
+        const t = snap.data() as TimerDetail;
         let foundOne = false;
         let p: keyof CourseTimes;
-        for (p in timer.absoluteTimes) {
-          if (timer.absoluteTimes[p] != null) {
+        for (p in t.absoluteTimes) {
+          if (t.absoluteTimes[p] != null) {
             foundOne = true;
             break;
           }
