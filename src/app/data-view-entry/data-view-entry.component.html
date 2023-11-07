@@ -6,8 +6,18 @@
       </mat-card-title-group>
     </mat-card-header>
     <mat-card-content>
-    <ul>
-        <li *ngIf="!_timer?.completed"><i>Roll Pending</i></li>
+      <ng-container *ngIf="!_timer?.completed; else notpending">
+        <b><i style="color: orange">Roll Pending</i></b>
+      </ng-container>
+      <ng-template #notpending>
+        <ng-container *ngIf="_abs?.T8 == null; else finished">
+          <i style="color: red">Roll Result: DNF</i>
+        </ng-container>
+      </ng-template>
+      <ng-template #finished>
+        <i style="color: darkgreen">Roll Result: Completed</i>
+      </ng-template>
+      <ul>
         <li *ngIf="_abs?.T0 != null"><b>Start</b>: {{ _abs?.T0 | date:'mediumTime' }}</li>
         <li *ngIf="_abs?.T1 != null"><b>1-2 Transition</b>: {{ _abs?.T1 | date:'mediumTime' }}</li>
         <li *ngIf="_abs?.T2 != null"><b>Crosswalk</b>: {{ _abs?.T2| date:'mediumTime' }}</li>
@@ -17,9 +27,9 @@
         <li *ngIf="_abs?.T6 != null"><b>3-4 Transition</b>: {{ _abs?.T6 | date:'mediumTime' }}</li>
         <li *ngIf="_abs?.T7 != null"><b>4-5 Transition</b>: {{ _abs?.T7 | date:'mediumTime' }}</li>
         <li *ngIf="_abs?.T8 != null"><b>Finish</b>: {{ _abs?.T8 | date:'mediumTime' }}</li>
-    </ul>
-    <hr>
-    <ul>
+      </ul>
+      <hr>
+      <ul>
         <li *ngIf="_splits?.hill1 != null"><b>Hill 1:</b> {{ _splits?.hill1 }}s</li>
         <li *ngIf="_splits?.hill2 != null"><b>Hill 2:</b> {{ _splits?.hill2 }}s</li>
         <li *ngIf="_splits?.hill3 != null"><b>Hill 3:</b> {{ _splits?.hill3 }}s</li>
@@ -32,6 +42,6 @@
 
         <li *ngIf="_splits?.crosswalkFull != null"><b>Crosswalk-Finish:</b> {{ _splits?.crosswalkFull }}s</li>
         <li *ngIf="_splits?.full != null"><b>Full:</b> {{ _splits?.full }}s</li>
-    </ul>    
+      </ul>
     </mat-card-content>
 </mat-card>

@@ -8,5 +8,6 @@ import { TimerDetail } from './timer-detail';
 })
 export class TimerDetailComponent {
   @Input() timer: TimerDetail | null = null;
+  @Output() timeevent = new EventEmitter<TimerDetail>();
   @Output() scratch = new EventEmitter<TimerDetail>();
 }

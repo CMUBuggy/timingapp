@@ -25,4 +25,4 @@
 </button>
 </div>
 
-<timer-detail *ngFor="let t of timers$ | async" [timer]="t" (scratch)="scratchRoll($event)" (click)="markTime(t)"></timer-detail>
+<timer-detail *ngFor="let t of timers$ | async" [timer]="t" (scratch)="scratchRoll($event)" (timeevent)="markTime(t)"></timer-detail>
