@@ -6,7 +6,7 @@ import { Firestore, CollectionReference, collection, collectionData, doc,
          query, orderBy, where } from '@angular/fire/firestore';
 
 import { BuggyDetail } from '../buggy-detail/buggy-detail';
-
+import { BuggyDataService } from '../buggy-data.service';
 
 
 @Component({
@@ -23,7 +23,7 @@ export class BuggyPickerComponent {
   buggyQuery = query(this.buggyCollection, where("active", '==', true), orderBy("org"), orderBy("name"));
   filteredOrg: string = "";
   buggies$: Observable<BuggyDetail[]>;
-  orgList : string[] = [];
+  orgList$ : Observable<string[]>;
 
   // error handling through messages, eventually
   //todo$ = this.todoClean$.pipe(catchError(err => of([{id: 'ERR', title: 'Error', description: err}])));
@@ -31,26 +31,12 @@ export class BuggyPickerComponent {
   constructor(
     public dialogRef: MatDialogRef<BuggyPickerComponent>,
     private store: Firestore,
+    private buggyService: BuggyDataService,
     @Inject(MAT_DIALOG_DATA) public inputData: BuggyPickerData
   ) {
 
-    // TODO this definately should be a service with a BehaviorSubject to not reread all the
-    // buggies each time!  This service should also offer both an active and an inactive
-    // set of buggies, as well as the org list.  Ugh.
-    let rawbuggies$ = collectionData(this.buggyQuery, { idField: 'id' }) as Observable<BuggyDetail[]>;
-    this.buggies$ = rawbuggies$.pipe(map((buggies => {
-      // Generate a set of unique org names from all of our buggies.
-      let orgMap = new Map<string, boolean>;
-
-      buggies.forEach((b) => {
-        orgMap.set(b.org, true);
-      });
-      this.orgList = Array.from(orgMap.keys()).sort();
-      console.log(JSON.stringify(this.orgList));
-
-      // We've processed it into our org list, pass it on.
-      return buggies;
-    })));
+    this.buggies$ = buggyService.getActiveBuggies();
+    this.orgList$ = buggyService.getActiveOrgList();
   }
 
   select(selectedBuggy : BuggyDetail) : void {

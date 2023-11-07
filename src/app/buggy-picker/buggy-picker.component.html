@@ -5,7 +5,7 @@
     <mat-label>Filter By Org</mat-label>
     <mat-select [(value)]="filteredOrg">
       <mat-option value="">(Show All)</mat-option>
-      <mat-option *ngFor="let o of orgList" value="{{o}}">{{o}}</mat-option>
+      <mat-option *ngFor="let o of orgList$ | async" value="{{o}}">{{o}}</mat-option>
     </mat-select>
   </mat-form-field>
 

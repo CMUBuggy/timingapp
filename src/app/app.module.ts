@@ -26,7 +26,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSelectModule } from '@angular/material/select';
 
-// Our Pipes
+// Our Pipes & Providers
+import { BuggyDataService } from './buggy-data.service';
 import { BuggyThumbnailPipe } from './buggy-detail/buggy-detail';
 
 // Our UI Pieces
@@ -80,7 +81,10 @@ import { DataViewEntryComponent } from './data-view-entry/data-view-entry.compon
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideFirestore(() => getFirestore())
   ],
-  providers: [DatePipe],
+  providers: [
+    BuggyDataService,
+    DatePipe
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
