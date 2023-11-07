@@ -9,7 +9,7 @@ import { Firestore, CollectionReference, collection, collectionData, doc,
          query, orderBy, where,
          serverTimestamp } from '@angular/fire/firestore';
 
-import { Observable, pipe, map} from 'rxjs';
+import { Observable, map} from 'rxjs';
 
 import { BuggyPickerComponent, BuggyPickerResult } from '../buggy-picker/buggy-picker.component';
 
@@ -32,17 +32,18 @@ export class TimerComponent {
   timerCollection : CollectionReference = collection(this.store, 'Timers');
   timerQuery = query(this.timerCollection, where("completed", "!=", true),
                      orderBy("completed"), orderBy("creationTime"));
-  rawtimers$ = collectionData(this.timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
-  timers$ : Observable<ExtendedTimerDetail[]> =
-    this.rawtimers$.pipe(map((inTimers) => {
+  timers$ : Observable<ExtendedTimerDetail[]>;
+
+  constructor(private dialog: MatDialog, private datePipe: DatePipe, private store: Firestore) {
+    let rawtimers$ = collectionData(this.timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
+    this.timers$ = rawtimers$.pipe(map((inTimers) => {
       let out : ExtendedTimerDetail[] = [];
       inTimers.forEach((t) => {
         out.push(new ExtendedTimerDetail(t)); 
       });
       return out;
     }));
-
-  constructor(private dialog: MatDialog, private datePipe: DatePipe, private store: Firestore) {}
+  }
 
   // Update the location tag based on the drop down.
   changeLocation(): void {
