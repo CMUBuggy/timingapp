@@ -3,16 +3,16 @@
 <div>
     <mat-form-field>
       <mat-label>Position</mat-label>
-      <mat-select [(ngModel)]="courseLocation">
-        <mat-option value="0-start">Start Line</mat-option>
-        <mat-option value="1-trans12">1-2 Transition</mat-option>
-        <mat-option value="2-cross">Crosswalk</mat-option>
-        <mat-option value="3-stop">Stop Sign</mat-option>
-        <mat-option value="4-chute">Chute Flag</mat-option>
-        <mat-option value="5-hill3">Hill 3 Line</mat-option>
-        <mat-option value="6-trans34">3-4 Transition</mat-option>
-        <mat-option value="7-trans45">4-5 Transition</mat-option>
-        <mat-option value="8-finish">Finish Line</mat-option>
+      <mat-select [(ngModel)]="courseLocation" (selectionChange)="changeLocation()">
+        <mat-option value="0">Start Line</mat-option>
+        <mat-option value="1">1-2 Transition</mat-option>
+        <mat-option value="2">Crosswalk</mat-option>
+        <mat-option value="3">Stop Sign</mat-option>
+        <mat-option value="4">Chute Flag</mat-option>
+        <mat-option value="5">Hill 3 Line</mat-option>
+        <mat-option value="6">3-4 Transition</mat-option>
+        <mat-option value="7">4-5 Transition</mat-option>
+        <mat-option value="8">Finish Line</mat-option>
       </mat-select>
     </mat-form-field>
     <mat-button-toggle-group style="margin:8px" [(ngModel)]="showAllUnfinished" multiple>
@@ -25,4 +25,10 @@
 </button>
 </div>
 
-<timer-detail *ngFor="let t of timers$ | async" [timer]="t" (scratch)="scratchRoll($event)" (timeevent)="markTime(t)"></timer-detail>
+<ng-container *ngFor="let t of timers$ | async">
+  <timer-detail *ngIf="showAllUnfinished[0] == 'true' ||
+                       (t.lastSeenAt != null && t.lastSeenAt == -1) ||
+                       (t.lastSeenAt != null && courseLocationNumeric > 0 && t.lastSeenAt < courseLocationNumeric)"
+                [timer]="t"
+                (scratch)="scratchRoll($event)" (timeevent)="markTime(t.db)"></timer-detail>
+</ng-container>

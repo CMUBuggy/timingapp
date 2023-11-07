@@ -1,16 +1,17 @@
 
 <mat-card class="timer-card" *ngIf="timer" style="margin:2em">
-    <mat-card-header (click)="timeevent.emit(timer)">
+    <mat-card-header (click)="timeevent.emit(timer.db)">
         <mat-card-title-group>
-          <mat-card-title>{{ timer.buggy.name }}</mat-card-title>
-          <mat-card-subtitle>{{ timer.buggy.org }}</mat-card-subtitle>
-          <img mat-card-sm-image *ngIf="timer.buggy.smugmugSlug" src="{{timer.buggy.smugmugSlug|buggyThumbnail}}">
+          <mat-card-title>{{ timer.db.buggy.name }}</mat-card-title>
+          <mat-card-subtitle>{{ timer.db.buggy.org }}</mat-card-subtitle>
+          <img mat-card-sm-image *ngIf="timer.db.buggy.smugmugSlug" src="{{timer.db.buggy.smugmugSlug|buggyThumbnail}}">
         </mat-card-title-group>
       </mat-card-header>
       <mat-card-content>
+        <b>Last Seen: </b>{{ timer.lastSeenAtString }}
         <hr>
         <nav class="button-row">
-          <button mat-flat-button color="warn" (click)="scratch.emit(timer)">Scratch</button>
+          <button mat-flat-button color="warn" (click)="scratch.emit(timer.db)">Scratch</button>
         </nav>
       </mat-card-content>
 </mat-card>

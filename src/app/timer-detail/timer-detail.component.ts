@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { TimerDetail } from './timer-detail';
+import { ExtendedTimerDetail, TimerDetail } from './timer-detail';
 
 @Component({
   selector: 'timer-detail',
@@ -7,7 +7,7 @@ import { TimerDetail } from './timer-detail';
   styleUrls: ['./timer-detail.component.css']
 })
 export class TimerDetailComponent {
-  @Input() timer: TimerDetail | null = null;
+  @Input() timer: ExtendedTimerDetail | null = null;
   @Output() timeevent = new EventEmitter<TimerDetail>();
   @Output() scratch = new EventEmitter<TimerDetail>();
 }

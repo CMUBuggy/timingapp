@@ -9,16 +9,11 @@ import { Firestore, CollectionReference, collection, collectionData, doc,
          query, orderBy, where,
          serverTimestamp } from '@angular/fire/firestore';
 
-import { Observable } from 'rxjs';
+import { Observable, pipe, map} from 'rxjs';
 
 import { BuggyPickerComponent, BuggyPickerResult } from '../buggy-picker/buggy-picker.component';
 
-import { CourseTimes, TimerDetail } from '../timer-detail/timer-detail';
-
-
-
-// For faking data, roughly 8:20am 11/6/23
-const recentStamp = 1699277096;
+import { CourseTimes, TimerDetail, ExtendedTimerDetail } from '../timer-detail/timer-detail';
 
 @Component({
   selector: 'app-timer',
@@ -28,18 +23,37 @@ const recentStamp = 1699277096;
 export class TimerComponent {
   // What a mess.  MatButtonToggle "functions as a checkbox" but isn't a boolean.  WTF.
   // So, if it is "true" then we show all the unfinished.  I guess if this is empty it is false?
-  showAllUnfinished: string[] = ["true"];
+  showAllUnfinished: string[] = [""];
   courseLocation: string = "";
+  courseLocationNumeric: number = -1;
 
-
+  // We always grab all current rolls.  The UI will filter based on current location and
+  // the showAllUnfinished setting.  This means fewer DB reads.
   timerCollection : CollectionReference = collection(this.store, 'Timers');
   timerQuery = query(this.timerCollection, where("completed", "!=", true),
                      orderBy("completed"), orderBy("creationTime"));
-  timers$ = collectionData(this.timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
-  // TODO filter$ timers further based on if there are times after my location and showAllUnfnished setting
-
+  rawtimers$ = collectionData(this.timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
+  timers$ : Observable<ExtendedTimerDetail[]> =
+    this.rawtimers$.pipe(map((inTimers) => {
+      let out : ExtendedTimerDetail[] = [];
+      inTimers.forEach((t) => {
+        out.push(new ExtendedTimerDetail(t)); 
+      });
+      return out;
+    }));
 
   constructor(private dialog: MatDialog, private datePipe: DatePipe, private store: Firestore) {}
+
+  // Update the location tag based on the drop down.
+  changeLocation(): void {
+    const VALID_LOCATION_TAGS = ["0", "1", "2", "3", "4", "5", "6", "7", "8"];
+    const locationTag = this.courseLocation.charAt(0);
+    if (!VALID_LOCATION_TAGS.includes(locationTag)) {
+      this.courseLocationNumeric = -1;
+    } else {
+      this.courseLocationNumeric = Number(locationTag);
+    }
+  }
 
   addRoll() : void {
     // Open dialog to pick from available buggies to start a roll with
@@ -83,11 +97,9 @@ export class TimerComponent {
   }
 
   markTime(timer: TimerDetail) {
-    const validLocationTags = ["0", "1", "2", "3", "4", "5", "6", "7", "8"];
-    const locationTag = this.courseLocation.charAt(0);
-    if (!validLocationTags.includes(locationTag)) {
+    if (this.courseLocationNumeric < 0 || this.courseLocationNumeric > 8) {
       // TODO better error handling (messages?)
-      console.log("unknown location tag in marktime: " + this.courseLocation)
+      console.log("unknown location tag in marktime: " + this.courseLocationNumeric)
       return;
     }
 
@@ -96,11 +108,11 @@ export class TimerComponent {
     // TODO: Fail if roll is now scratched
     // TOOD: Fail if roll is unstarted and we aren't a starter location (0 or 2)
     const docRef = doc(this.timerCollection, timer.id);
-    const updateKey = "absoluteTimes.T" + locationTag;
+    const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
     console.log("Marking time for: " + timer.id + " at " + this.courseLocation + " via " + updateKey);
     
     let myUpdate : any = { [updateKey]: serverTimestamp() };
-    if (locationTag == "8") {
+    if (this.courseLocationNumeric == 8) {
       // Logged time at finish line, we're done!
       myUpdate.completed = true;
     }
