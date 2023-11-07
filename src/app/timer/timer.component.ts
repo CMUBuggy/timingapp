@@ -4,7 +4,8 @@ import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 
 import { Firestore, CollectionReference, collection, collectionData, doc,
-         addDoc, deleteDoc, setDoc, updateDoc,
+         addDoc, deleteDoc, updateDoc,
+         runTransaction,
          query, orderBy, where,
          serverTimestamp } from '@angular/fire/firestore';
 
@@ -12,7 +13,7 @@ import { Observable } from 'rxjs';
 
 import { BuggyPickerComponent, BuggyPickerResult } from '../buggy-picker/buggy-picker.component';
 
-import { TimerDetail } from '../timer-detail/timer-detail';
+import { CourseTimes, TimerDetail } from '../timer-detail/timer-detail';
 
 
 
@@ -107,10 +108,38 @@ export class TimerComponent {
     updateDoc(docRef, myUpdate);
   }
 
-  scratchRoll(timer: TimerDetail) {
-    // TODO: Transaction and check if no times logged yet, if it is truly unstarted, delete the timer wholesale.
+  async scratchRoll(timer: TimerDetail) {
+    // If there are no times logged yet, scratch means remove
+    // entirely.
 
     const docRef = doc(this.timerCollection, timer.id);
-    updateDoc(docRef, { completed: true });
+
+    try {
+      await runTransaction(this.store, async(txn) => {
+        const t = await txn.get(docRef);
+        if (!t.exists()) {
+          throw "Timer" + timer.id + "doesn't exist?";
+        }
+
+        let foundOne = false;
+        let p: keyof CourseTimes;
+        for (p in timer.absoluteTimes) {
+          if (timer.absoluteTimes[p] != null) {
+            foundOne = true;
+            break;
+          }
+        }
+
+        if (foundOne) {
+          // Roll has started, we issue an update.
+          txn.update(docRef, { completed: true });
+        } else {
+          // Roll not started, delete it.
+          txn.delete(docRef);
+        }
+      });
+    } catch (e) {
+      console.log("Scratch Transaaction Failed: ", e);
+    }
   }
 }

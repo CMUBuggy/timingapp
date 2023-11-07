@@ -3,6 +3,7 @@ import { FieldValue, Timestamp } from "@angular/fire/firestore";
 
 // Because firestore is array-hostile, we encode the times as a sub-object.
 export interface CourseTimes {
+    [key: string] : any;
     T0: Timestamp | null;  // Start
     T1: Timestamp | null;  // 1-2 Trans
     T2: Timestamp | null;  // Crosswalk
