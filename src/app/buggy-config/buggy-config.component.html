@@ -5,16 +5,17 @@
 </button>
 
 <mat-form-field>
-<mat-label>TODO: org filter</mat-label>
-<mat-select>
-  <mat-option value="CIA">CIA</mat-option>
-  <mat-option value="Fringe">Fringe</mat-option>
-  <mat-option value="SDC">SDC</mat-option>
+<mat-label>Filter By Org</mat-label>
+<mat-select [(value)]="filteredOrg">
+  <mat-option value="">(Show All)</mat-option>
+  <mat-option *ngFor="let o of orgList" value="{{o}}">{{o}}</mat-option>
 </mat-select>
 </mat-form-field>
 
 <p *ngIf="(buggies$ | async)?.length === 0">No Buggies Configured</p>
-<buggy-detail *ngFor="let b of buggies$ | async" [buggy]="b"
-              (edit)="editBuggy($event)"
-              (toggleActive)="toggleActive($event)"
-              (delete)="deleteBuggy($event)"></buggy-detail>
+<ng-container *ngFor="let b of buggies$ | async">
+  <buggy-detail *ngIf="filteredOrg == '' || filteredOrg == b.org" [buggy]="b"
+                (edit)="editBuggy($event)"
+                (toggleActive)="toggleActive($event)"
+                (delete)="deleteBuggy($event)"></buggy-detail>
+</ng-container>

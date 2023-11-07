@@ -8,7 +8,7 @@ import { BuggyDialogComponent, BuggyDialogResult } from '../buggy-dialog/buggy-d
 import { Firestore, CollectionReference, collection, collectionData, doc,
          addDoc, deleteDoc, setDoc,
          query, orderBy } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-buggy-config',
@@ -18,13 +18,30 @@ import { Observable } from 'rxjs';
 export class BuggyConfigComponent {
   buggyCollection : CollectionReference = collection(this.store, 'Buggies');
   buggyQuery = query(this.buggyCollection, orderBy("org"), orderBy("name"));
-  buggies$ = collectionData(this.buggyQuery, { idField: 'id' }) as Observable<BuggyDetail[]>;
+  filteredOrg: string = "";
+  orgList: string[] = [];
+  buggies$: Observable<BuggyDetail[]>;
 
   // error handling through messages, eventually
   //todo$ = this.todoClean$.pipe(catchError(err => of([{id: 'ERR', title: 'Error', description: err}])));
 
+  constructor(private dialog: MatDialog, private store: Firestore) {
+    // TODO see note in BuggyPickerComponent about how we want a BuggyListService to share
 
-  constructor(private dialog: MatDialog, private store: Firestore) {}
+    let rawbuggies$ = collectionData(this.buggyQuery, { idField: 'id' }) as Observable<BuggyDetail[]>;
+    this.buggies$ = rawbuggies$.pipe(map((buggies => {
+      // Generate a set of unique org names from all of our buggies.
+      let orgMap = new Map<string, boolean>;
+
+      buggies.forEach((b) => {
+        orgMap.set(b.org, true);
+      });
+      this.orgList = Array.from(orgMap.keys()).sort();
+
+      // We've processed it into our org list, pass it on.
+      return buggies;
+    })));
+  }
 
   newBuggy() : void {
     const dialogRef = this.dialog.open(BuggyDialogComponent, {
@@ -55,12 +72,8 @@ export class BuggyConfigComponent {
       if (!result) {
         return;
       }
-      // Note: Not a transaction, force to fit the current UI.
+      // Note: Not a transaction, force DB to fit the current UI.
       setDoc(doc(this.buggyCollection, buggy.id), result.buggy);
-      /*
-      const taskIndex = this.buggies.indexOf(buggy);
-      this.buggies[taskIndex] = result.buggy;
-      */
     });
   }
 

@@ -9,7 +9,7 @@ import { Firestore, CollectionReference, collection, collectionData, doc,
          query, orderBy, where,
          serverTimestamp } from '@angular/fire/firestore';
 
-import { Observable, map} from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { BuggyPickerComponent, BuggyPickerResult } from '../buggy-picker/buggy-picker.component';
 
@@ -108,8 +108,8 @@ export class TimerComponent {
     const docRef = doc(this.timerCollection, timer.id);
     const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
     const txnCourseLocation = this.courseLocationNumeric;
-    console.log("Marking time for: " + timer.id + " at " +
-                txnCourseLocation + " via " + updateKey);
+    console.log("Marking time for: " + timer.id + " at '" +
+                TIMING_SITE_NAMES[txnCourseLocation] + "' via " + updateKey);
 
     try {
       await runTransaction(this.store, async(txn) => {
