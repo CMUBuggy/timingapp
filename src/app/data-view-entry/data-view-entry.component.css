@@ -1,0 +1,13 @@
+.pending {
+    color: orange;
+    font-weight: bold;
+    font-style: italic;
+}
+.dnf {
+    color: red;
+    font-style: italic;
+}
+.completed {
+    color: darkgreen;
+    font-style: italic;
+}

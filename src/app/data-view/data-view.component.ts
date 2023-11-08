@@ -5,9 +5,11 @@ import { FormControl } from '@angular/forms';
 
 import { TimerDetail } from '../timer-detail/timer-detail';
 
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { Firestore, CollectionReference, collection, collectionData, doc,
          Query, query, orderBy, where } from '@angular/fire/firestore';
+
+import { TimerConversionService } from '../timer-conversion.service';
 
 @Component({
   selector: 'app-data-view',
@@ -19,14 +21,19 @@ export class DataViewComponent {
 
   displayDate = new FormControl(new Date());
 
+  // TODO probably shouldn't be 2 member variables (especially if we can replace with a service)....
   timerQuery = this.buildQuery();
   timers$ = this.refreshTimers();
 
-  constructor(private store: Firestore, private datePipe: DatePipe) { };
+  constructor(private store: Firestore, private datePipe: DatePipe, private fileSaver : TimerConversionService) { };
 
   getCsv() : void {
-    console.log("csv dump not implemented");
-    return; // todo
+    // Temp code, this should be a BehaviorSubject instead of a new observable that repings the db.
+    let rawTimers = collectionData(this.timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
+    rawTimers.pipe(take(1)).subscribe((value) => {
+      // console.log(JSON.stringify(value));
+      this.fileSaver.csvDownloadTimers(value);
+    });
   }
 
   dateChange() {

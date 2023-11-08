@@ -28,6 +28,7 @@ import { MatSelectModule } from '@angular/material/select';
 
 // Our Pipes & Providers
 import { BuggyDataService } from './buggy-data.service';
+import { TimerConversionService } from './timer-conversion.service';
 import { BuggyThumbnailPipe } from './buggy-detail/buggy-detail';
 
 // Our UI Pieces
@@ -83,6 +84,8 @@ import { DataViewEntryComponent } from './data-view-entry/data-view-entry.compon
   ],
   providers: [
     BuggyDataService,
+    TimerConversionService,
+
     DatePipe
   ],
   bootstrap: [AppComponent]
