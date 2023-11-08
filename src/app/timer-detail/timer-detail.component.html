@@ -1,6 +1,10 @@
 
 <mat-card class="timer-card" *ngIf="timer" style="margin:2em">
-    <mat-card-header (click)="timeevent.emit(timer.db)">
+    <mat-card-header (click)="timeevent.emit(timer.db)"
+                     (keydown.enter)="timeevent.emit(timer.db)"
+                     role="button"
+                     class="is-focusable"
+                     tabindex="0">
         <mat-card-title-group>
           <mat-card-title>{{ timer.db.buggy.name }}</mat-card-title>
           <mat-card-subtitle>{{ timer.db.buggy.org }}</mat-card-subtitle>
