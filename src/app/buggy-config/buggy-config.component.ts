@@ -36,7 +36,7 @@ export class BuggyConfigComponent {
     const dialogRef = this.dialog.open(BuggyDialogComponent, {
       width: '270px',
       data: {
-        buggy: { active: true },
+        buggy: { active: true, org: this.filteredOrg },
       },
     });
     dialogRef
