@@ -29,6 +29,6 @@
   <timer-detail *ngIf="showAllUnfinished[0] == 'true' ||
                        (t.lastSeenAt != null && t.lastSeenAt == -1) ||
                        (t.lastSeenAt != null && courseLocationNumeric > 0 && t.lastSeenAt < courseLocationNumeric)"
-                [timer]="t"
+                [timer]="t" [myLocation]="courseLocationNumeric"
                 (scratch)="scratchRoll($event)" (timeevent)="markTime(t.db)"></timer-detail>
 </ng-container>

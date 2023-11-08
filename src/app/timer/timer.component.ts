@@ -99,12 +99,15 @@ export class TimerComponent {
 
   async markTime(timer: TimerDetail) {
     // TODO better error handling (messages in UI, not just console log)
+
+    // This first error is really the only one we can safely detect outside the
+    // transaction context, since it indicates our local state isn't properly
+    // configured.
     if (this.courseLocationNumeric < 0 || this.courseLocationNumeric > 8) {
       console.log("unknown location tag in marktime: " + this.courseLocationNumeric)
       return;
     }
 
-    // TODO: Fail if roll is unstarted and we aren't a starter location (0 or 2)
     const docRef = doc(this.timerCollection, timer.id);
     const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
     const txnCourseLocation = this.courseLocationNumeric;
@@ -126,8 +129,15 @@ export class TimerComponent {
         const et = new ExtendedTimerDetail(t);
         if (et.lastSeenAt != null && et.lastSeenAt >= txnCourseLocation) {
           return Promise.reject("Roll " + timer.id + " has data at " +
-                                et.lastSeenAtString + " update failed here at " +
+                                et.lastSeenAtString +
+                                " therefore update failed here at " +
                                 TIMING_SITE_NAMES[txnCourseLocation]);
+        }
+
+        if (et.lastSeenAt == -1 && !([0, 2].includes(txnCourseLocation))) {
+          return Promise.reject("Roll " + timer.id + " not yet started and " +
+                                TIMING_SITE_NAMES[txnCourseLocation] +
+                                " is not a start location.")
         }
 
         let myUpdate : any = { [updateKey]: serverTimestamp() };
