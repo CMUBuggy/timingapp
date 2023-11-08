@@ -4,8 +4,7 @@ import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 
 import { Firestore, CollectionReference, collection, collectionData, doc,
-         addDoc, deleteDoc, updateDoc,
-         runTransaction,
+         addDoc, runTransaction,
          query, orderBy, where,
          serverTimestamp } from '@angular/fire/firestore';
 
@@ -88,10 +87,6 @@ export class TimerComponent {
           absoluteTimes: { T0: null, T1: null, T2: null, T3: null,
                            T4: null, T5: null, T6: null, T7: null, T8: null }
         }
-
-        // Sanitize the new item here
-        // TODO technically we don't need the active tag any more either
-        delete newTimer.buggy.id;
 
         addDoc(this.timerCollection, newTimer)
       });

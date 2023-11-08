@@ -1,4 +1,4 @@
-import { BuggyDetail } from "../buggy-detail/buggy-detail";
+import { RolledBuggyDetail } from "../buggy-detail/buggy-detail";
 import { FieldValue, Timestamp } from "@angular/fire/firestore";
 
 // Because firestore is array-hostile, we encode the times as a sub-object.
@@ -20,7 +20,7 @@ export interface TimerDetail {
     date: string; // YYYY-MM-DD (day of roll for queries)
     creationTime: Timestamp | FieldValue; // Time of creation (for sorting in timer display)
     completed: boolean; // True if this has reached an end state (has a final time or marked as a scratch)
-    buggy : BuggyDetail;
+    buggy : RolledBuggyDetail;
     absoluteTimes : CourseTimes;  // For now, seconds since epoch, eventually, Firestore Timestamp objects.
 }
 

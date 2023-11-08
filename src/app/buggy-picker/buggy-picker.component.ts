@@ -5,7 +5,7 @@ import { Observable, map } from 'rxjs';
 import { Firestore, CollectionReference, collection, collectionData, doc,
          query, orderBy, where } from '@angular/fire/firestore';
 
-import { BuggyDetail } from '../buggy-detail/buggy-detail';
+import { BuggyDetail, RolledBuggyDetail, getRolledData } from '../buggy-detail/buggy-detail';
 import { BuggyDataService } from '../buggy-data.service';
 
 
@@ -35,12 +35,12 @@ export class BuggyPickerComponent {
     @Inject(MAT_DIALOG_DATA) public inputData: BuggyPickerData
   ) {
 
-    this.buggies$ = buggyService.getActiveBuggies();
-    this.orgList$ = buggyService.getActiveOrgList();
+    this.buggies$ = this.buggyService.getActiveBuggies();
+    this.orgList$ = this.buggyService.getActiveOrgList();
   }
 
   select(selectedBuggy : BuggyDetail) : void {
-    this.dialogRef.close({ buggy: selectedBuggy });
+    this.dialogRef.close({ buggy: getRolledData(selectedBuggy) });
   }
 
   cancel(): void {
@@ -52,5 +52,5 @@ export interface BuggyPickerData {
 }
 
 export interface BuggyPickerResult {
-  buggy: BuggyDetail;
+  buggy: RolledBuggyDetail;
 }
