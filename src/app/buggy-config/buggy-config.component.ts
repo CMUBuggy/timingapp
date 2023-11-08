@@ -6,7 +6,7 @@ import { BuggyDetail } from '../buggy-detail/buggy-detail';
 import { BuggyDialogComponent, BuggyDialogResult } from '../buggy-dialog/buggy-dialog.component';
 
 import { Firestore, CollectionReference, collection, collectionData, doc,
-         addDoc, deleteDoc, setDoc,
+         addDoc, deleteDoc, setDoc, updateDoc,
          query, orderBy } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { BuggyDataService } from '../buggy-data.service';
@@ -22,9 +22,6 @@ export class BuggyConfigComponent {
   filteredOrg: string = "";
   buggies$: Observable<BuggyDetail[]>;
   orgList$: Observable<string[]>;
-
-  // error handling through messages, eventually
-  //todo$ = this.todoClean$.pipe(catchError(err => of([{id: 'ERR', title: 'Error', description: err}])));
 
   constructor(
     private dialog: MatDialog,
@@ -64,22 +61,23 @@ export class BuggyConfigComponent {
       if (!result) {
         return;
       }
+
+      let updatedBuggy : BuggyDetail = {...result.buggy};
+      delete updatedBuggy.id; // give a hoot, don't pollute.
+
       // Note: Not a transaction, force DB to fit the current UI.
-      setDoc(doc(this.buggyCollection, buggy.id), result.buggy);
+      setDoc(doc(this.buggyCollection, buggy.id), updatedBuggy);
     });
   }
 
   toggleActive(buggy : BuggyDetail) {
     // Note: Not a transaction, force to fit the current UI.
-    buggy.active = !buggy.active;
-    setDoc(doc(this.buggyCollection, buggy.id), buggy);
+    buggy.active = !buggy.active;  // Update the current state before firestore catches up.
+
+    updateDoc(doc(this.buggyCollection, buggy.id), { active: buggy.active });
   }
 
   deleteBuggy(buggy: BuggyDetail) {
-    /*
-    const taskIndex = this.buggies.indexOf(buggy);
-    this.buggies.splice(taskIndex, 1);
-    */
     deleteDoc(doc(this.buggyCollection, buggy.id));
   }
 }
