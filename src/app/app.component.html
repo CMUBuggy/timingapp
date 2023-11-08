@@ -2,11 +2,7 @@
   <mat-icon>local_fire_department</mat-icon>
   <span>Sweepstakes Timing</span>
 </mat-toolbar>
-
-<router-outlet></router-outlet>
-<app-messages></app-messages>
-<hr>
-<nav class="button-row">
+<nav class="button-row" style="margin-top:8px; margin-left:2px">
   <a mat-flat-button color="primary" routerLink="/timer"
      routerLinkActive #rlatimer="routerLinkActive" [disabled]="rlatimer.isActive">Time Entry</a>
   <a mat-flat-button color="primary" routerLink="/buggyconfig"
@@ -14,3 +10,8 @@
   <a mat-flat-button color="primary" routerLink="/dataview"
      routerLinkActive #rladata="routerLinkActive" [disabled]="rladata.isActive">Data View</a>
 </nav>
+<hr>
+<router-outlet></router-outlet>
+<hr>
+<app-messages></app-messages>
+

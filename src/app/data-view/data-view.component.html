@@ -1,4 +1,3 @@
-<h2>View Data</h2>
 <mat-form-field>
   <mat-label>Rolls From Date</mat-label>
   <input matInput [matDatepicker]="picker" [formControl]="displayDate" (dateChange)="dateChange()">
@@ -9,4 +8,4 @@
 <button mat-flat-button color="primary" style="margin: 8px" (click)="getCsv()">Get CSV</button>
 <hr>
 <data-view-entry *ngFor="let t of timers$ | async" [timer]="t"></data-view-entry>
-<data-view-entry></data-view-entry>
+<div *ngIf="(timers$ | async)?.length == 0">No times from {{displayDate.value | date:'M/d/YYYY'}}.</div>
