@@ -152,7 +152,6 @@ export class TimerConversionService {
           const creationStamp =
             this.datePipe.transform(convertTime(rowData.creationTime as Timestamp),
                                                 "yyyy-MM-dd HH:mm:ss");
-          console.log(creationStamp);
           const t = getAbsoluteMillisecondTimes(rowData);
           const s = getTimingSplits(t);
           const cols = [

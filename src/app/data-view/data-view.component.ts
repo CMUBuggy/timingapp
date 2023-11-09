@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { Component } from '@angular/core';
 
 import { FormControl } from '@angular/forms';
@@ -6,8 +5,6 @@ import { FormControl } from '@angular/forms';
 import { TimerDetail } from '../timer-detail/timer-detail';
 
 import { Observable, take } from 'rxjs';
-import { Firestore, CollectionReference, collection, collectionData, doc,
-         Query, query, orderBy, where } from '@angular/fire/firestore';
 
 import { TimerDataService } from '../timer-data.service'
 import { TimerConversionService } from '../timer-conversion.service';
@@ -21,9 +18,7 @@ export class DataViewComponent {
   displayDate = new FormControl(new Date());
   timers$ = this.getCurrentTimerObservable();
 
-  constructor(private store: Firestore,
-              private timerDataService: TimerDataService,
-              private datePipe: DatePipe,
+  constructor(private timerDataService: TimerDataService,
               private fileSaver : TimerConversionService) { };
 
   getCsv() : void {
