@@ -3,9 +3,8 @@ import { Component } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 
-import { Firestore, CollectionReference, collection, collectionData, doc,
+import { Firestore, doc,
          addDoc, runTransaction,
-         query, orderBy, where,
          serverTimestamp } from '@angular/fire/firestore';
 
 import { Observable, map } from 'rxjs';
@@ -13,6 +12,8 @@ import { Observable, map } from 'rxjs';
 import { BuggyPickerComponent, BuggyPickerResult } from '../buggy-picker/buggy-picker.component';
 
 import { TIMING_SITE_NAMES, CourseTimes, TimerDetail, ExtendedTimerDetail } from '../timer-detail/timer-detail';
+
+import { TimerDataService } from '../timer-data.service';
 
 @Component({
   selector: 'app-timer',
@@ -26,22 +27,15 @@ export class TimerComponent {
   courseLocation: string = "";
   courseLocationNumeric: number = -1;
 
-  // We always grab all current rolls.  The UI will filter based on current location and
+  // We always grab all pending rolls.  The UI will filter based on current location and
   // the showAllUnfinished setting.  This means fewer DB reads.
-  timerCollection : CollectionReference = collection(this.store, 'Timers');
-  timerQuery = query(this.timerCollection, where("completed", "!=", true),
-                     orderBy("completed"), orderBy("creationTime"));
   timers$ : Observable<ExtendedTimerDetail[]>;
 
-  constructor(private dialog: MatDialog, private datePipe: DatePipe, private store: Firestore) {
-    let rawtimers$ = collectionData(this.timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
-    this.timers$ = rawtimers$.pipe(map((inTimers) => {
-      let out : ExtendedTimerDetail[] = [];
-      inTimers.forEach((t) => {
-        out.push(new ExtendedTimerDetail(t)); 
-      });
-      return out;
-    }));
+  constructor(private dialog: MatDialog,
+              private datePipe: DatePipe,
+              private store: Firestore,
+              private timerDataService: TimerDataService) {
+    this.timers$ = this.timerDataService.getPendingTimers();
   }
 
   // Update the location tag based on the drop down.
@@ -88,7 +82,7 @@ export class TimerComponent {
                            T4: null, T5: null, T6: null, T7: null, T8: null }
         }
 
-        addDoc(this.timerCollection, newTimer)
+        addDoc(this.timerDataService.getTimerCollection(), newTimer)
       });
   }
 
@@ -103,7 +97,8 @@ export class TimerComponent {
       return;
     }
 
-    const docRef = doc(this.timerCollection, timer.id);
+    const docRef = doc(this.timerDataService.getTimerCollection(),
+                       timer.id);
     const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
     const txnCourseLocation = this.courseLocationNumeric;
     console.log("Marking time for: " + timer.id + " at '" +
@@ -152,7 +147,8 @@ export class TimerComponent {
     // If there are no times logged yet, scratch means remove
     // entirely.
 
-    const docRef = doc(this.timerCollection, timer.id);
+    const docRef = doc(this.timerDataService.getTimerCollection(),
+                       timer.id);
 
     try {
       await runTransaction(this.store, async(txn) => {

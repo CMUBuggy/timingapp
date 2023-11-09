@@ -9,6 +9,7 @@ import { Observable, take } from 'rxjs';
 import { Firestore, CollectionReference, collection, collectionData, doc,
          Query, query, orderBy, where } from '@angular/fire/firestore';
 
+import { TimerDataService } from '../timer-data.service'
 import { TimerConversionService } from '../timer-conversion.service';
 
 @Component({
@@ -17,19 +18,24 @@ import { TimerConversionService } from '../timer-conversion.service';
   styleUrls: ['./data-view.component.css']
 })
 export class DataViewComponent {
-  timerCollection : CollectionReference = collection(this.store, 'Timers');
-
   displayDate = new FormControl(new Date());
+  timers$ = this.getCurrentTimerObservable();
 
-  // TODO probably shouldn't be 2 member variables (especially if we can replace with a service)....
-  timerQuery = this.buildQuery();
-  timers$ = this.refreshTimers();
-
-  constructor(private store: Firestore, private datePipe: DatePipe, private fileSaver : TimerConversionService) { };
+  constructor(private store: Firestore,
+              private timerDataService: TimerDataService,
+              private datePipe: DatePipe,
+              private fileSaver : TimerConversionService) { };
 
   getCsv() : void {
-    // Temp code, this should be a BehaviorSubject instead of a new observable that repings the db.
-    let rawTimers = collectionData(this.timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
+    // CONSIDER: We go back to the getter here, which is more
+    // pure, but if we just force timers$ to be a behaviorsubject
+    // instead of a BehaviorSubject masquerading as an
+    // Observable.
+    let rawTimers = this.getCurrentTimerObservable();
+
+    // The take(1) will complete the observable after the
+    // first emit (hopefully basically immediately), so we
+    // probably don't need to track the subscription.
     rawTimers.pipe(take(1)).subscribe((value) => {
       // console.log(JSON.stringify(value));
       this.fileSaver.csvDownloadTimers(value);
@@ -37,19 +43,11 @@ export class DataViewComponent {
   }
 
   dateChange() {
-    this.timerQuery = this.buildQuery();
-    this.timers$ = this.refreshTimers();
+    this.timers$ = this.timerDataService.getDataViewTimers(this.displayDate.value as Date);
   }
 
-  private buildQuery() : Query {
-    const dateString = this.datePipe.transform(this.displayDate.value, "yyyy-MM-dd");
-
-    // We order by descending creation time so that (most likely) the most recent rolls show first.
-    // This may not be ideal for, say, generating a CSV though.
-    return query(this.timerCollection, where("date", '==', dateString), orderBy("creationTime", "desc"));
-  }
-
-  private refreshTimers() : Observable<TimerDetail[]> {
-    return collectionData(this.timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
+  private getCurrentTimerObservable() : Observable<TimerDetail[]> {
+    return this.timerDataService.getDataViewTimers(
+      this.displayDate.value as Date);
   }
 }
