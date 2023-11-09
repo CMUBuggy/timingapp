@@ -10,10 +10,18 @@
   </mat-form-field>
 
   <ng-container *ngFor="let b of buggies$ | async">
-    <div *ngIf="filteredOrg == '' || filteredOrg == b.org" (click)="select(b)">
-      <img *ngIf="b.smugmugSlug; else noBuggyImage" src="{{b.smugmugSlug|buggyThumbnail}}">
-      <ng-template #noBuggyImage>{{b.name}}</ng-template>
-    </div>
+    <mat-card *ngIf="filteredOrg == '' || filteredOrg == b.org"
+              class="buggycard" (click)="select(b)">
+      <mat-card-header class="buggyheader">
+        <mat-card-title-group class="buggytitle">
+          <img *ngIf="b.smugmugSlug"
+               mat-card-md-image class="buggyimage"
+               src="{{b.smugmugSlug|buggyThumbnail}}">
+          <mat-card-subtitle>{{ b.name }}</mat-card-subtitle>
+          <mat-card-subtitle>{{ b.org }}</mat-card-subtitle>
+        </mat-card-title-group>
+      </mat-card-header>
+    </mat-card>
   </ng-container>
 </mat-dialog-content>
 

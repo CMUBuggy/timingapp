@@ -1,0 +1,17 @@
+.buggyimage {
+    width: 100px;
+    height: 100px;
+}
+
+.buggyheader {
+    padding-bottom: 8px;
+    padding-top:8px;
+}
+
+.buggycard {
+    margin-bottom: 4px;
+}
+
+.buggytitle {
+    margin-bottom: 4px;
+}

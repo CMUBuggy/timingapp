@@ -55,7 +55,7 @@ export class TimerComponent {
     // 
     // TODO: Technically this is not sufficient, we need to at least specify a class as well.
     const dialogRef = this.dialog.open(BuggyPickerComponent, {
-      width: '270px',
+      width: '280px',
       data: {
         buggy: { active: true },
       },

@@ -45,7 +45,6 @@ export class BuggyConfigComponent {
         if (!result) {
           return;
         }
-        //this.buggies.push(result.buggy);
         addDoc(this.buggyCollection, result.buggy);
       });
   }
