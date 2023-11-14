@@ -15,7 +15,9 @@
         </mat-card-title-group>
     </mat-card-header>
     <mat-card-content>
-      <hr *ngIf="clickTooEarly || clickInvalid">
+      <hr *ngIf="clickTooEarly || clickInvalid || clickToStart || clickToTime">
+      <div *ngIf="clickToStart"><b>Buggy Ready: </b>Tap above to Start Roll</div>
+      <div *ngIf="clickToTime"><b>Buggy Rolling: </b>Tap above to Record Time</div>
       <div *ngIf="clickTooEarly"><b>Warning: </b>Awaiting Start</div>
       <div *ngIf="clickInvalid"><b>Warning: </b>Selected position cannot record time</div>
       <hr>
