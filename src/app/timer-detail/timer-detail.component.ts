@@ -1,6 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { ExtendedTimerDetail, TimerDetail } from './timer-detail';
 
+const SCRATCH_TEXT: string = "Scratch";
+const END_ROLL_TEXT: string = "DNF";
+
 @Component({
   selector: 'timer-detail',
   templateUrl: './timer-detail.component.html',
@@ -19,30 +22,32 @@ export class TimerDetailComponent implements OnChanges {
   // Always false if clickInvalid == true.
   clickToTime : boolean = false;
 
+  // Label for the "Scratch"/"End Roll" button
+  scratchLabel : string = SCRATCH_TEXT;
+
   @Input() timer: ExtendedTimerDetail | null = null;
   @Input() myLocation: number = -1;
   @Output() timeevent = new EventEmitter<TimerDetail>();
   @Output() scratch = new EventEmitter<TimerDetail>();
 
   ngOnChanges(changes: SimpleChanges): void {
+    const unstartedRoll = this.timer == null || this.timer.lastSeenAt == null || this.timer.lastSeenAt < 0;
+
+    if (unstartedRoll) {
+      this.scratchLabel = SCRATCH_TEXT;
+    } else {
+      this.scratchLabel = END_ROLL_TEXT;
+    }
+
     this.clickInvalid =
       this.timer == null ||
         (this.myLocation < 0 ||
           (this.timer.lastSeenAt != null && this.myLocation <= this.timer.lastSeenAt))
 
     if ( !this.clickInvalid ) {
-      this.clickTooEarly =
-        this.timer != null &&
-        (this.timer.lastSeenAt == null || this.timer.lastSeenAt < 0) &&
-        !([0, 2].includes(this.myLocation));
-      this.clickToTime =
-        this.timer != null &&
-        (this.timer.lastSeenAt != null && this.timer.lastSeenAt >= 0) &&
-        (this.myLocation != 0);
-      this.clickToStart =
-        this.timer != null &&
-        (this.timer.lastSeenAt == null || this.timer.lastSeenAt < 0) &&
-        ([0, 2].includes(this.myLocation));
+      this.clickTooEarly = unstartedRoll && !([0, 2].includes(this.myLocation));
+      this.clickToTime = !unstartedRoll && this.myLocation != 0;
+      this.clickToStart = unstartedRoll && ([0, 2].includes(this.myLocation));
     } else {
       this.clickTooEarly = false;
       this.clickToTime = false;

@@ -22,7 +22,7 @@
       <div *ngIf="clickInvalid"><b>Warning: </b>Selected position cannot record time</div>
       <hr>
       <nav class="button-row">
-        <button mat-flat-button color="warn" (click)="scratch.emit(timer.db)">Scratch</button>
+        <button mat-flat-button color="warn" (click)="scratch.emit(timer.db)">{{scratchLabel}}</button>
       </nav>
     </mat-card-content>
 </mat-card>
