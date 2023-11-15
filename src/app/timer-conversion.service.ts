@@ -5,7 +5,7 @@ import { Timestamp } from '@angular/fire/firestore';
 
 import { saveAs } from 'file-saver-es';
 
-import { TimerDetail } from './timer-detail/timer-detail';
+import { TimerDetail, getClassName } from './timer-detail/timer-detail';
 
 // TODO Combine with conversion stuff in DataViewEntry
 
@@ -128,7 +128,8 @@ export class TimerConversionService {
   csvDownloadTimers(globalData: TimerDetail[]) {
     const headers: string[] =
       [ "CreationTime",
-        "Org", "Buggy", "RollMarkedComplete", "RollDNF",
+        "Org", "Buggy", "Class", "Team",
+        "RollMarkedComplete", "RollDNF",
         "Start", "12Trans", "Crosswalk",
         "StopSign", "ChuteFlag", "Hill3Line",
         "34Trans", "45Trans", "Finish",
@@ -158,6 +159,7 @@ export class TimerConversionService {
             creationStamp,
             b.org.replaceAll('\"', '').replaceAll(',', ''),
             b.name.replaceAll('\"', '').replaceAll(',', ''),
+            getClassName(rowData?.class), rowData?.team,
             rowData.completed, (!rowData.completed || t.T8 == null),
             numOrEmpty(t.T0),
             numOrEmpty(t.T1), numOrEmpty(t.T2),

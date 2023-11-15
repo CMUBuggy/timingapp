@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { ExtendedTimerDetail, TimerDetail } from './timer-detail';
+import { ExtendedTimerDetail, TimerDetail, getClassTeamString } from './timer-detail';
 
 const SCRATCH_TEXT: string = "Scratch";
 const END_ROLL_TEXT: string = "DNF";
@@ -25,12 +25,17 @@ export class TimerDetailComponent implements OnChanges {
   // Label for the "Scratch"/"End Roll" button
   scratchLabel : string = SCRATCH_TEXT;
 
+  // The full expansion of the class & team (e.g. "Women's C")
+  classTeam : string = "";
+
   @Input() timer: ExtendedTimerDetail | null = null;
   @Input() myLocation: number = -1;
   @Output() timeevent = new EventEmitter<TimerDetail>();
   @Output() scratch = new EventEmitter<TimerDetail>();
 
   ngOnChanges(changes: SimpleChanges): void {
+    this.classTeam = getClassTeamString(this.timer?.db.class, this.timer?.db.team);
+
     const unstartedRoll = this.timer == null || this.timer.lastSeenAt == null || this.timer.lastSeenAt < 0;
 
     if (unstartedRoll) {

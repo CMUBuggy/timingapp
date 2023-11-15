@@ -41,6 +41,7 @@ import { TimerDetailComponent } from './timer-detail/timer-detail.component';
 import { DataViewComponent } from './data-view/data-view.component';
 import { BuggyPickerComponent } from './buggy-picker/buggy-picker.component';
 import { DataViewEntryComponent } from './data-view-entry/data-view-entry.component';
+import { ClassPickerComponent } from './class-picker/class-picker.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import { DataViewEntryComponent } from './data-view-entry/data-view-entry.compon
     TimerDetailComponent,
     DataViewComponent,
     BuggyPickerComponent,
-    DataViewEntryComponent
+    DataViewEntryComponent,
+    ClassPickerComponent
   ],
   imports: [
     AppRoutingModule,

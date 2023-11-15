@@ -10,6 +10,7 @@ import { Firestore, doc,
 import { Observable, map } from 'rxjs';
 
 import { BuggyPickerComponent, BuggyPickerResult } from '../buggy-picker/buggy-picker.component';
+import { ClassPickerComponent, ClassPickerResult } from '../class-picker/class-picker.component';
 
 import { TIMING_SITE_NAMES, CourseTimes, TimerDetail, ExtendedTimerDetail } from '../timer-detail/timer-detail';
 
@@ -49,40 +50,69 @@ export class TimerComponent {
     }
   }
 
+  // This is a bit ugly because it chains two dialog boxes.
   addRoll() : void {
     // Open dialog to pick from available buggies to start a roll with
     // Start roll with current date, selected buggy, and blanked out aboslute times.
     // 
     // TODO: Technically this is not sufficient, we need to at least specify a class as well.
-    const dialogRef = this.dialog.open(BuggyPickerComponent, {
+    const buggyDialogRef = this.dialog.open(BuggyPickerComponent, {
       width: '280px',
       data: {
         buggy: { active: true },
       },
     });
-    dialogRef
+    buggyDialogRef
       .afterClosed()
       .subscribe((result: BuggyPickerResult|undefined) => {
         if (!result) {
           return;
         }
 
-        let today = this.datePipe.transform(new Date(),"yyyy-MM-dd");
-        if (!today) {
-          // TODO this is a huge hack to avoid a null string that is basically not possible to occur
-          today = "1920-01-01";
-        }
+        const classDialogRef = this.dialog.open(ClassPickerComponent, {
+          width: '280px',
+          data: {}
+        });
+        classDialogRef.afterClosed().subscribe(
+          (classResult: ClassPickerResult|undefined) => {
 
-        let newTimer : TimerDetail = {
-          date: today,
-          creationTime: serverTimestamp(),
-          completed: false,
-          buggy: { ...result.buggy },
-          absoluteTimes: { T0: null, T1: null, T2: null, T3: null,
-                           T4: null, T5: null, T6: null, T7: null, T8: null }
-        }
+          if (!classResult) {
+            // Canceled
+            return;
+          }
 
-        addDoc(this.timerDataService.getTimerCollection(), newTimer)
+          // TODO error message for bad input
+          if (classResult.confirmed &&
+              (!["A","M","W"].includes(classResult.class) ||
+               !["A","B","C","D"].includes(classResult.team))) {
+              console.error("Bad Data from Class Picker?");
+              console.error("class " + classResult.class);
+              console.error("team " + classResult.team);
+              return;
+          }
+
+          let today = this.datePipe.transform(new Date(),"yyyy-MM-dd");
+          if (!today) {
+            // TODO this is a huge hack to avoid a null string that is basically not possible to occur
+            today = "1920-01-01";
+          }
+
+          let newTimer : TimerDetail = {
+            date: today,
+            creationTime: serverTimestamp(),
+            completed: false,
+            buggy: { ...result.buggy },
+            absoluteTimes: { T0: null, T1: null, T2: null, T3: null,
+                             T4: null, T5: null, T6: null, T7: null, T8: null }
+          }
+
+          if (classResult.confirmed) {
+            newTimer.class = classResult.class
+            newTimer.team = classResult.team
+          }
+
+          addDoc(this.timerDataService.getTimerCollection(), newTimer)
+        });
       });
   }
 

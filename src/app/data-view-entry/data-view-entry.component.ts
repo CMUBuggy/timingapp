@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-import { TimerDetail } from '../timer-detail/timer-detail';
+import { TimerDetail, getClassTeamString } from '../timer-detail/timer-detail';
 
 import { AbsoluteMillisecondTimes, TimeSplitTenths,
          getAbsoluteMillisecondTimes, getTimingSplits } from '../timer-conversion.service';
@@ -16,10 +16,12 @@ export class DataViewEntryComponent {
   get timer(): TimerDetail | null { return this._timer; }
   set timer(timer: TimerDetail) {
     this._timer = timer;
+    this._classTeamString = getClassTeamString(timer.class, timer.team);
     this._abs = getAbsoluteMillisecondTimes(timer);
     this._splits = getTimingSplits(this._abs);
   }
 
+  public _classTeamString : string = "";
   public _timer : TimerDetail | null = null;
   public _abs : AbsoluteMillisecondTimes | null = null;
   public _splits : TimeSplitTenths | null = null;

@@ -14,7 +14,10 @@ export interface CourseTimes {
     T8: Timestamp | null;  // Finish Line
 }
 
-// Timers as represented in Firestore.  Buggy data is frozen when timer is created.
+// TODO maybe this file shouldn't be a part of the timer detail component, since this is
+// used in several places.
+//
+// Timers as represented in Firestore.  Buggy data is copied & frozen when timer is created.
 export interface TimerDetail {
     id?: string;
     date: string; // YYYY-MM-DD (day of roll for queries)
@@ -22,6 +25,10 @@ export interface TimerDetail {
     completed: boolean; // True if this has reached an end state (has a final time or marked as a scratch)
     buggy : RolledBuggyDetail;
     absoluteTimes : CourseTimes;  // For now, seconds since epoch, eventually, Firestore Timestamp objects.
+
+    // Optional fields
+    class? : string;
+    team? : string;
 }
 
 // TODO seems this should be in a more common place?
@@ -29,6 +36,31 @@ export const TIMING_SITE_NAMES = ["Start", "1-2 Transition", "Crosswalk",
                                   "Stop Sign", "Chute Flag", "Hill 3 Line",
                                   "3-4 Transition", "4-5 Transition",
                                   "Finish Line"];
+
+export function getClassName(classChar: string | undefined) {
+    if (classChar === undefined) {
+        return "";
+    }
+    switch(classChar) {
+        case "A":
+          return "All Gender";
+        case "M":
+          return "Men's";
+        case "W":
+          return "Women's";
+        default:
+          return "Unknown";
+    }
+}
+
+export function getClassTeamString(classChar: string | undefined,
+                                   teamChar: string | undefined){
+    if (classChar === undefined || teamChar === undefined) {
+        return "";
+    }
+
+    return getClassName(classChar) + " " + teamChar;
+}
 
 export class ExtendedTimerDetail {
     // Number of station where buggy was last seen (corresponds to db.absoluteTimes)

@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>Select Class & Team</h2>
+
+<mat-dialog-content>
+  <mat-button-toggle-group style="margin:6px" [(ngModel)]="class">
+    <mat-button-toggle value="A">All</mat-button-toggle>
+    <mat-button-toggle value="M">Men's</mat-button-toggle>
+    <mat-button-toggle value="W">Women's</mat-button-toggle>
+  </mat-button-toggle-group>
+  <mat-button-toggle-group style="margin:6px" [(ngModel)]="team">
+    <mat-button-toggle value="A">A</mat-button-toggle>
+    <mat-button-toggle value="B">B</mat-button-toggle>
+    <mat-button-toggle value="C">C</mat-button-toggle>
+    <mat-button-toggle value="D">D</mat-button-toggle>
+  </mat-button-toggle-group>
+</mat-dialog-content>
+
+<div mat-dialog-actions>
+    <button mat-button (click)="select(true)">OK</button>
+    <button mat-button (click)="select(false)">Skip</button>
+    <button mat-button (click)="cancel()">Cancel Roll</button>
+</div>
