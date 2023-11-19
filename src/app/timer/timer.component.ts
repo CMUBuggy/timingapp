@@ -15,6 +15,7 @@ import { ClassPickerComponent, ClassPickerResult } from '../class-picker/class-p
 import { TIMING_SITE_NAMES, CourseTimes, TimerDetail, ExtendedTimerDetail } from '../timer-detail/timer-detail';
 
 import { TimerDataService } from '../timer-data.service';
+import { MessageService } from '../message.service';
 
 @Component({
   selector: 'app-timer',
@@ -35,6 +36,7 @@ export class TimerComponent {
   constructor(private dialog: MatDialog,
               private datePipe: DatePipe,
               private store: Firestore,
+              private messageService: MessageService,
               private timerDataService: TimerDataService) {
     this.timers$ = this.timerDataService.getPendingTimers();
   }
@@ -54,8 +56,6 @@ export class TimerComponent {
   addRoll() : void {
     // Open dialog to pick from available buggies to start a roll with
     // Start roll with current date, selected buggy, and blanked out aboslute times.
-    // 
-    // TODO: Technically this is not sufficient, we need to at least specify a class as well.
     const buggyDialogRef = this.dialog.open(BuggyPickerComponent, {
       width: '280px',
       data: {
@@ -81,20 +81,19 @@ export class TimerComponent {
             return;
           }
 
-          // TODO error message for bad input
           if (classResult.confirmed &&
               (!["A","M","W"].includes(classResult.class) ||
                !["A","B","C","D"].includes(classResult.team))) {
-              console.error("Bad Data from Class Picker?");
-              console.error("class " + classResult.class);
-              console.error("team " + classResult.team);
+              this.messageService.add("Bad Data From Class Picker: [c:"
+                                      + classResult.class + "] [t:"
+                                      + classResult.team +"]");
               return;
           }
 
           let today = this.datePipe.transform(new Date(),"yyyy-MM-dd");
           if (!today) {
-            // TODO this is a huge hack to avoid a null string that is basically not possible to occur
-            today = "1920-01-01";
+            this.messageService.add("Cannot determine current date");
+            return;
           }
 
           let newTimer : TimerDetail = {
@@ -112,18 +111,19 @@ export class TimerComponent {
           }
 
           addDoc(this.timerDataService.getTimerCollection(), newTimer)
+            .catch(error => {
+              this.messageService.add("New Roll Creation error: " + error);
+            })
         });
       });
   }
 
   async markTime(timer: TimerDetail) {
-    // TODO better error handling (messages in UI, not just console log)
-
     // This first error is really the only one we can safely detect outside the
     // transaction context, since it indicates our local state isn't properly
     // configured.
     if (this.courseLocationNumeric < 0 || this.courseLocationNumeric > 8) {
-      console.log("unknown location tag in marktime: " + this.courseLocationNumeric)
+      this.messageService.add("Not logging time, invalid location id: " + this.courseLocationNumeric);
       return;
     }
 
@@ -169,7 +169,7 @@ export class TimerComponent {
         txn.update(docRef, myUpdate);
       });
     } catch (e) {
-      console.log("Mark Time Transaction Failed: ", e);
+      this.messageService.add("Mark Time Failed: " + e);
     }
   }
 
@@ -206,7 +206,7 @@ export class TimerComponent {
         }
       });
     } catch (e) {
-      console.log("Scratch Transaaction Failed: ", e);
+      this.messageService.add("Scratch/DNF Failed: " + e);
     }
   }
 }

@@ -33,6 +33,14 @@ export class TimerDetailComponent implements OnChanges {
   @Output() timeevent = new EventEmitter<TimerDetail>();
   @Output() scratch = new EventEmitter<TimerDetail>();
 
+  markTime() {
+    if (this.timer == null || this.clickInvalid || this.clickTooEarly) {
+      // Can't click yet (and appearance should so indicate)
+      return;
+    }
+    this.timeevent.emit(this.timer.db);
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     this.classTeam = getClassTeamString(this.timer?.db.class, this.timer?.db.team);
 

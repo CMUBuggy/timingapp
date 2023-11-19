@@ -7,8 +7,6 @@ import { saveAs } from 'file-saver-es';
 
 import { TimerDetail, getClassName } from './timer-detail/timer-detail';
 
-// TODO Combine with conversion stuff in DataViewEntry
-
 // Used for converting from firebase Timestamp objects.
 export interface AbsoluteMillisecondTimes {
   T0: number | null; // Start
@@ -192,7 +190,7 @@ function numOrEmpty(t: number | null): string {
 // Computes time between two millisecond timestamps in seconds rounded to tenths.
 function roundSplit(to: number, from: number) : number {
   if (to < from) {
-    throw("First time after second in roundSplit()");
+    throw("First time after second time in roundSplit()");
   }
   let t = to - from;
   return Number((t/1000).toFixed(1));

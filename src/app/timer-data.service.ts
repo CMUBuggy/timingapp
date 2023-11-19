@@ -4,8 +4,9 @@ import { DatePipe } from '@angular/common';
 import { Firestore, collectionData, collection,
          query, where, orderBy, CollectionReference } from '@angular/fire/firestore';
 
-import { BehaviorSubject, Observable, map, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, map, Subscription, catchError } from 'rxjs';
 
+import { MessageService } from './message.service';
 import { TimerDetail, ExtendedTimerDetail } from './timer-detail/timer-detail';
 
 // This service provides 2 types of timer data:
@@ -33,6 +34,7 @@ export class TimerDataService implements OnDestroy {
   dataViewTimersSub : Subscription | null = null;
 
   constructor(private store: Firestore,
+              private messageService: MessageService,
               private datePipe: DatePipe) { }
 
   ngOnDestroy() {
@@ -53,14 +55,24 @@ export class TimerDataService implements OnDestroy {
       this.timerCollection, where("completed", "!=", true),
       orderBy("completed"), orderBy("creationTime"));
 
+    // First create the base query with an error handler
     let rawtimers$ = collectionData(timerQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
-    this.pendingTimersObs$ = rawtimers$.pipe(map((inTimers) => {
-      let out : ExtendedTimerDetail[] = [];
-      inTimers.forEach((t) => {
-        out.push(new ExtendedTimerDetail(t));
-      });
-      return out;
-    }));
+    rawtimers$ = rawtimers$.pipe(
+      catchError(err => {
+        this.messageService.add("(Reload Required) Read Pending Timers Error: " + err);
+        throw (err);
+      })
+    );
+
+    this.pendingTimersObs$ = rawtimers$.pipe(
+      map((inTimers) => {
+        let out : ExtendedTimerDetail[] = [];
+        inTimers.forEach((t) => {
+          out.push(new ExtendedTimerDetail(t));
+        });
+        return out;
+      })
+    );
 
     this.pendingTimers$ = new BehaviorSubject([] as ExtendedTimerDetail[]);
     this.pendingTimersSub = this.pendingTimersObs$.subscribe(this.pendingTimers$);
@@ -96,8 +108,17 @@ export class TimerDataService implements OnDestroy {
         where("date", '==', this.dataViewDateString),
         orderBy("creationTime", "desc"));
 
-      this.dataViewTimersObs$ = collectionData(
+      // First create the base query
+      let rawtimers$ = collectionData(
         dataViewQuery, { idField: 'id' }) as Observable<TimerDetail[]>;
+
+      // Our member variable includes an error handler
+      this.dataViewTimersObs$ = rawtimers$.pipe(
+        catchError(err => {
+          this.messageService.add("(Reload or new date required) Read Data View Timers Error: " + err);
+          throw (err);
+        })
+      );
 
       this.dataViewTimers$ = new BehaviorSubject([] as TimerDetail[]);
       this.pendingTimersSub = this.dataViewTimersObs$.subscribe(
@@ -105,6 +126,7 @@ export class TimerDataService implements OnDestroy {
     }
 
     if (this.dataViewTimers$ == null) {
+      this.messageService.add("Unknown error when setting up data view timers");
       throw("Unexpected null dataViewTimers$ at end of getDataViewtimers");
     }
 

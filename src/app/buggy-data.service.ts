@@ -1,9 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Firestore, CollectionReference, collection, collectionData, doc,
-         query, orderBy, where } from '@angular/fire/firestore';
-import { BehaviorSubject, Observable, Subscription, map, tap } from 'rxjs';
+import { Firestore, CollectionReference, collection, collectionData,
+         query, orderBy } from '@angular/fire/firestore';
+import { BehaviorSubject, Observable, Subscription, map, tap, catchError } from 'rxjs';
 
 import { BuggyDetail } from './buggy-detail/buggy-detail';
+import { MessageService } from './message.service';
 
 // This class provides 3 things:
 //   An up-to-date array of all the unique org names of
@@ -36,8 +37,17 @@ export class BuggyDataService implements OnDestroy {
   // Unique org lists are also generated locally as new data comes in from firestore,
   // as a tap() off of the all-buggy list, and in line with the map() that finds
   // the active buggies.
-  constructor(private store: Firestore) {
+  constructor(private store: Firestore,
+              private messageService: MessageService) {
     let rawbuggies$ = collectionData(this.buggyQuery, { idField: 'id' }) as Observable<BuggyDetail[]>;
+
+    rawbuggies$ = rawbuggies$.pipe(
+      catchError(err => {
+        this.messageService.add("(Reload Required) Read buggies error: " + err);
+        throw (err);
+      })
+    );
+
     this.allBuggiesObservable$ = rawbuggies$.pipe(tap((buggies => {
       let orgList = getUniqueOrgs(buggies);
       this.allOrgList$.next(orgList);
