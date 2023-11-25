@@ -209,4 +209,37 @@ export class TimerComponent {
       this.messageService.add("Scratch/DNF Failed: " + e);
     }
   }
+
+  // Verify we are still the most recent location, then remove our time if so.
+  async tryUndo(timer: TimerDetail) {
+    const docRef = doc(this.timerDataService.getTimerCollection(),
+                       timer.id);
+
+    const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
+    const txnCourseLocation = this.courseLocationNumeric;
+
+    try {
+      await runTransaction(this.store, async(txn) => {
+        const snap = await txn.get(docRef);
+        if (!snap.exists()) {
+          throw "Timer" + timer.id + "doesn't exist?";
+        }
+
+        const t = snap.data() as TimerDetail;
+        const et = new ExtendedTimerDetail(t);
+        if (et.lastSeenAt != null && et.lastSeenAt != txnCourseLocation) {
+          return Promise.reject("Roll was not last seen here.  It has a time from " +
+                                et.lastSeenAtString +
+                                " therefore we cannot undo at " +
+                                TIMING_SITE_NAMES[txnCourseLocation]);
+        }
+
+        let myUpdate : any = { [updateKey]: null };
+        txn.update(docRef, myUpdate);
+      });
+    } catch (e) {
+      this.messageService.add("Undo Failed: " + e);
+    }
+  }
+
 }

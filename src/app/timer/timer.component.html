@@ -28,5 +28,5 @@
                        (t.lastSeenAt != null && t.lastSeenAt == -1) ||
                        (t.lastSeenAt != null && courseLocationNumeric > 0 && t.lastSeenAt < courseLocationNumeric)"
                 [timer]="t" [myLocation]="courseLocationNumeric"
-                (scratch)="scratchRoll($event)" (timeevent)="markTime(t.db)"></timer-detail>
+                (scratch)="scratchRoll($event)" (timeevent)="markTime(t.db)" (undo)="tryUndo(t.db)"></timer-detail>
 </ng-container>

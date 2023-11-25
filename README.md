@@ -36,6 +36,8 @@ Only the Start and Crosswalk positions can add the initial time for a roll -- an
 
 Incomplete rolls can be terminated with the red "Scratch"/"DNF" button.  A roll that is "Scratched" (e.g. unstarted) is removed from the set of rolls entirely.  Once started, a roll can be marked "DNF" which removes it from the actively rolling buggies, but keeps any times that have been recorded so far.
 
+It is possible to undo a time event if it was made in error as long as no later station has marked their own time for the same roll.  This can be done using the "undo" button if you have "show all unfinished" enabled.  Note that because it completes the roll, the Finish Line location cannot perform an undo (as the roll becomes immutable once it is completed).
+
 #### Tips
 
 You will likely want at least 3 volunteers to do useful timing and at least get splits of the Freeroll and Back Hills.  These would be in order of importance: Crosswalk, Finish Line, and Hill 3 Line.  After that, depending on the splits you desire to time, you can add Start (for Front Hills), and each of the hill transitions.  The Stop Sign and Chute Flag are likely the least useful positions to staff.

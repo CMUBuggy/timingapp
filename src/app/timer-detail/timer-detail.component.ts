@@ -22,6 +22,9 @@ export class TimerDetailComponent implements OnChanges {
   // Always false if clickInvalid == true.
   clickToTime : boolean = false;
 
+  // True if we are the most recent time update, and thus we can undo that time.
+  canUndo : boolean = false;
+
   // Label for the "Scratch"/"End Roll" button
   scratchLabel : string = SCRATCH_TEXT;
 
@@ -32,6 +35,7 @@ export class TimerDetailComponent implements OnChanges {
   @Input() myLocation: number = -1;
   @Output() timeevent = new EventEmitter<TimerDetail>();
   @Output() scratch = new EventEmitter<TimerDetail>();
+  @Output() undo = new EventEmitter<TimerDetail>();
 
   markTime() {
     if (this.timer == null || this.clickInvalid || this.clickTooEarly) {
@@ -45,6 +49,13 @@ export class TimerDetailComponent implements OnChanges {
     this.classTeam = getClassTeamString(this.timer?.db.class, this.timer?.db.team);
 
     const unstartedRoll = this.timer == null || this.timer.lastSeenAt == null || this.timer.lastSeenAt < 0;
+
+    // To undo, there must be a timer that actually has a time,
+    // and the most recent time must be at our location.
+    //
+    // TODO: Because it completes the roll, the finish line implicitly cannot perform an undo.
+    this.canUndo = this.timer != null && this.timer.lastSeenAt != null &&
+                   this.timer.lastSeenAt == this.myLocation;
 
     if (unstartedRoll) {
       this.scratchLabel = SCRATCH_TEXT;

@@ -23,6 +23,7 @@
       <hr>
       <nav class="button-row">
         <button mat-flat-button color="warn" (click)="scratch.emit(timer.db)">{{scratchLabel}}</button>
+        <button mat-flat-button *ngIf="canUndo" color="warn" (click)="undo.emit(timer.db)">Undo</button>
         <span class="classteam">{{classTeam}}</span>
       </nav>
     </mat-card-content>
