@@ -28,6 +28,7 @@ export class TimerComponent {
   showAllUnfinished: string[] = [""];
   courseLocation: string = "";
   courseLocationNumeric: number = -1;
+  buggyPickerDefaultOrg: string = "";
 
   // We always grab all pending rolls.  The UI will filter based on current location and
   // the showAllUnfinished setting.  This means fewer DB reads.
@@ -59,7 +60,7 @@ export class TimerComponent {
     const buggyDialogRef = this.dialog.open(BuggyPickerComponent, {
       width: '280px',
       data: {
-        buggy: { active: true },
+        defaultOrg: this.buggyPickerDefaultOrg
       },
     });
     buggyDialogRef
@@ -96,6 +97,9 @@ export class TimerComponent {
             return;
           }
 
+          // Input was all good, store the default org.
+          this.buggyPickerDefaultOrg = result.nextDefaultOrg;
+
           let newTimer : TimerDetail = {
             date: today,
             creationTime: serverTimestamp(),
@@ -113,7 +117,7 @@ export class TimerComponent {
           addDoc(this.timerDataService.getTimerCollection(), newTimer)
             .catch(error => {
               this.messageService.add("New Roll Creation error: " + error);
-            })
+            });
         });
       });
   }
@@ -184,7 +188,7 @@ export class TimerComponent {
       await runTransaction(this.store, async(txn) => {
         const snap = await txn.get(docRef);
         if (!snap.exists()) {
-          throw "Timer" + timer.id + "doesn't exist?";
+          throw "Timer " + timer.id + " doesn't exist?";
         }
 
         const t = snap.data() as TimerDetail;
