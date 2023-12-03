@@ -32,8 +32,10 @@ export class DataViewComponent {
     // first emit (hopefully basically immediately), so we
     // probably don't need to track the subscription.
     rawTimers.pipe(take(1)).subscribe((value) => {
-      // console.log(JSON.stringify(value));
-      this.fileSaver.csvDownloadTimers(value);
+      // The CSV makes more sense when it is in chronological order, but
+      // we fetch the current timers in reverse chronological order
+      // (for the UI).  Thus, reverse the array before generating the CSV.
+      this.fileSaver.csvDownloadTimers(value.reverse());
     });
   }
 
