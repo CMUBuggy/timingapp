@@ -54,7 +54,7 @@ export class TimerDetailComponent implements OnChanges {
     // and the most recent time must be at our location.
     //
     // TODO: Because it completes the roll, the finish line implicitly cannot perform an undo.
-    this.canUndo = this.timer != null && this.timer.lastSeenAt != null &&
+    this.canUndo = this.timer != null && this.timer.lastSeenAt != null && this.myLocation != -1 &&
                    this.timer.lastSeenAt == this.myLocation;
 
     if (unstartedRoll) {
