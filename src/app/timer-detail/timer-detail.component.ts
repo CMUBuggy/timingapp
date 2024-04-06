@@ -18,7 +18,7 @@ export class TimerDetailComponent implements OnChanges {
   // Clicking will start the roll (valid at Start & Crosswalk when roll unstarted)
   // Always false if clickInvalid == true.
   clickToStart : boolean = false;
-  // Clikcing will enter a new time (valid when buggy has not passed current location and roll started)
+  // Clicking will enter a new time (valid when buggy has not passed current location and roll started)
   // Always false if clickInvalid == true.
   clickToTime : boolean = false;
 
@@ -33,6 +33,7 @@ export class TimerDetailComponent implements OnChanges {
 
   @Input() timer: ExtendedTimerDetail | null = null;
   @Input() myLocation: number = -1;
+  @Input() hideUnready: boolean = false;
   @Output() timeevent = new EventEmitter<TimerDetail>();
   @Output() scratch = new EventEmitter<TimerDetail>();
   @Output() undo = new EventEmitter<TimerDetail>();

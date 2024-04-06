@@ -13,8 +13,9 @@
         <mat-option value="8">Finish Line</mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-button-toggle-group style="margin:8px" [(ngModel)]="showAllUnfinished" multiple>
-      <mat-button-toggle value="true">Show All Unfinished</mat-button-toggle>
+    <mat-button-toggle-group style="margin:4px" [(ngModel)]="showAllFilters" (change)="changeFilters()" multiple>
+      <mat-button-toggle value="unready">Unready</mat-button-toggle>
+      <mat-button-toggle value="pastme">Unfinished</mat-button-toggle>
     </mat-button-toggle-group>
 </div>
 <div>
@@ -22,11 +23,10 @@
     <mat-icon>add</mat-icon> Roll A Buggy
 </button>
 </div>
-
 <ng-container *ngFor="let t of timers$ | async">
-  <timer-detail *ngIf="showAllUnfinished[0] == 'true' ||
+  <timer-detail *ngIf="showPastMe ||
                        (t.lastSeenAt != null && t.lastSeenAt == -1) ||
                        (t.lastSeenAt != null && courseLocationNumeric > 0 && t.lastSeenAt < courseLocationNumeric)"
-                [timer]="t" [myLocation]="courseLocationNumeric"
+                [timer]="t" [myLocation]="courseLocationNumeric" [hideUnready]="hideUnready"
                 (scratch)="scratchRoll($event)" (timeevent)="markTime(t.db)" (undo)="tryUndo(t.db)"></timer-detail>
 </ng-container>
