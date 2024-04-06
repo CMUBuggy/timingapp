@@ -25,7 +25,10 @@ import { MessageService } from '../message.service';
 export class TimerComponent {
   // What a mess.  MatButtonToggle "functions as a checkbox" but isn't a boolean.  WTF.
   // So, if it is "true" then we show all the unfinished.  I guess if this is empty it is false?
-  showAllUnfinished: string[] = [""];
+  showAllFilters: string[] = ["unready"];
+  hideUnready: boolean = false;
+  showPastMe: boolean = false;
+
   courseLocation: string = "";
   courseLocationNumeric: number = -1;
   buggyPickerDefaultOrg: string = "";
@@ -40,6 +43,10 @@ export class TimerComponent {
               private messageService: MessageService,
               private timerDataService: TimerDataService) {
     this.timers$ = this.timerDataService.getPendingTimers();
+
+    // Ensure correct state
+    this.changeLocation();
+    this.changeFilters();
   }
 
   // Update the location tag based on the drop down.
@@ -51,6 +58,11 @@ export class TimerComponent {
     } else {
       this.courseLocationNumeric = Number(locationTag);
     }
+  }
+
+  changeFilters(): void {
+    this.hideUnready = !this.showAllFilters.includes("unready");
+    this.showPastMe = this.showAllFilters.includes("pastme");
   }
 
   // This is a bit ugly because it chains two dialog boxes.
