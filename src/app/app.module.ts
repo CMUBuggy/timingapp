@@ -79,16 +79,16 @@ import { ClassPickerComponent } from './class-picker/class-picker.component';
     MatIconModule,
     MatInputModule,
     MatToolbarModule,
-    MatSelectModule,
-
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideFirestore(() => getFirestore())
+    MatSelectModule
   ],
   providers: [
     BuggyDataService,
     TimerConversionService,
 
-    DatePipe
+    DatePipe,
+
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideFirestore(() => getFirestore())
   ],
   bootstrap: [AppComponent]
 })
