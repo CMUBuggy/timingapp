@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Pipe, PipeTransform } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 
@@ -7,7 +7,7 @@ import { Firestore, doc,
          addDoc, runTransaction,
          serverTimestamp } from '@angular/fire/firestore';
 
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { BuggyPickerComponent, BuggyPickerResult } from '../buggy-picker/buggy-picker.component';
 import { ClassPickerComponent, ClassPickerResult } from '../class-picker/class-picker.component';
@@ -16,6 +16,65 @@ import { TIMING_SITE_NAMES, CourseTimes, TimerDetail, ExtendedTimerDetail } from
 
 import { TimerDataService } from '../timer-data.service';
 import { MessageService } from '../message.service';
+
+@Pipe({
+  name: 'localTimerSort'
+})
+export class LocalTimerSort {
+  // The timer data we pull down from firestore is sorted by creation date.  However, for the
+  // list of timers, it is better to do something more complex -- we want the buggies to be
+  // listed in the order that they presently are on the course, regardless of when the
+  // timer was first created.  This is something that we can't really ask firestore to do
+  // directly in its query language.  We need to do two things:
+  //
+  // First, sort by the latest location to have seen any buggy.  For example, a buggy that has
+  // its most recent time recorded at hill 3 is always further along than a buggy that has its
+  // most recent time recorded at the crosswalk.  A buggy with no recorded location sorts
+  // last (consider this a virtual "pending" location).
+  //
+  // If two buggies have their most recent recorded time at the same location, then sort them
+  // by which arrived at that location first.
+  //
+  // If neither buggy has any recorded times (they are both "pending"), sort them by their
+  // creation time (effectively, their "arrival" at the virtual "pending" location).
+  //
+  // We want the furthest along buggy to sort at the top of the list, thus it must sort the _lowest_.
+  //
+  // ---
+  //
+  // The result of this effort is that we reduce the importance of knowing the specific
+  // order the buggies will be dropped in when they are entered initially, as well as
+  // deal with dynamic order changes due to passes or other events once the roll is underway.
+  //
+  // It does, however, increase the odds that a buggy will change order while the roll is underway,
+  // leading to a potential misclick when the UI shifts.
+  transform(value: ExtendedTimerDetail[] | null): ExtendedTimerDetail[] {
+    if (value == null) {
+      // Seems reasonable to turn a null into an empty array here.
+      return [];
+    }
+
+    return value.slice().sort((a : ExtendedTimerDetail, b : ExtendedTimerDetail) => {
+      if (a == null || b == null ||
+          a.lastSeenAt == null || b.lastSeenAt == null) {
+        // Garbage in, garbage Out
+        return 0;
+      }
+
+      // lastSeenAt -1 means not started / pending, and is thus lower than any real position.
+      //
+      // ExtendedTimerDetail also translates the creation time into lastSeenAtTimestampMillis
+      // in this case
+      if (a.lastSeenAt < b.lastSeenAt) {
+        return 1;
+      } else if (a.lastSeenAt > b.lastSeenAt) {
+        return -1;
+      } else {
+        return a.lastSeenAtTimestampMillis - b.lastSeenAtTimestampMillis;
+      }
+    })
+  }
+}
 
 @Component({
   selector: 'app-timer',

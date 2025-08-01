@@ -24,7 +24,7 @@ export interface TimerDetail {
     creationTime: Timestamp | FieldValue; // Time of creation (for sorting in timer display)
     completed: boolean; // True if this has reached an end state (has a final time or marked as a scratch)
     buggy : RolledBuggyDetail;
-    absoluteTimes : CourseTimes;  // For now, seconds since epoch, eventually, Firestore Timestamp objects.
+    absoluteTimes : CourseTimes;  // Firestore Timestamp objects.
 
     // Optional fields
     class? : string;
@@ -67,15 +67,22 @@ export class ExtendedTimerDetail {
     public lastSeenAt : number | null;
     public lastSeenAtString : string;
 
+    // The timestamp at the last seen station, _or_ the creation time if no station has
+    // seen the buggy yet.  Used for sorting.
+    public lastSeenAtTimestampMillis : number;
+
     constructor(public db: TimerDetail) {
         this.lastSeenAt = -1;
+        this.lastSeenAtTimestampMillis = (db.creationTime instanceof Timestamp) ? db.creationTime.toMillis() : 0;
 
         let p: Extract<keyof CourseTimes, string>;
         for (p in db.absoluteTimes) {
-            if (db.absoluteTimes[p] != null) {
-                let current = Number(p.charAt(1))
-                if(current > this.lastSeenAt) {
+            let thisTime = db.absoluteTimes[p]; // Defeat Typescript Null Check
+            if (thisTime != null) {
+                let current = Number(p.charAt(1)) // Relies on specific field name format.
+                if (current > this.lastSeenAt) {
                     this.lastSeenAt = current;
+                    this.lastSeenAtTimestampMillis = thisTime.toMillis();
                 }
             }
         }

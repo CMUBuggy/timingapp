@@ -23,7 +23,7 @@
     <mat-icon>add</mat-icon> Roll A Buggy
 </button>
 </div>
-<ng-container *ngFor="let t of timers$ | async">
+<ng-container *ngFor="let t of timers$ | async | localTimerSort">
   <timer-detail *ngIf="showPastMe ||
                        (t.lastSeenAt != null && t.lastSeenAt == -1) ||
                        (t.lastSeenAt != null && courseLocationNumeric > 0 && t.lastSeenAt < courseLocationNumeric)"
