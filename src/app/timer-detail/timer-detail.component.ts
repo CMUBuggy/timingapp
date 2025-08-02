@@ -55,8 +55,9 @@ export class TimerDetailComponent implements OnChanges {
     let t = this.timer;
     if (t != null) {
       let lastTimestamp = t.lastSeenAtTimestampMillis;
+      // Max with 0 to account for timing races right after the recording of a new time.
       this.lastUpdateSeconds$ = timer(0, 1000)
-        .pipe(map(tick => Math.round((Date.now() - lastTimestamp) / 1000)));
+        .pipe(map(tick => Math.max(0, Math.round((Date.now() - lastTimestamp) / 1000))));
     } else {
       this.lastUpdateSeconds$ = of(0);
     }
