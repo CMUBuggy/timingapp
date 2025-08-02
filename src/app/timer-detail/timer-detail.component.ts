@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { ExtendedTimerDetail, TimerDetail, getClassTeamString } from './timer-detail';
+import { Observable, map, of, timer } from 'rxjs';
 
 const SCRATCH_TEXT: string = "Scratch";
 const END_ROLL_TEXT: string = "DNF";
@@ -31,6 +32,9 @@ export class TimerDetailComponent implements OnChanges {
   // The full expansion of the class & team (e.g. "Women's C")
   classTeam : string = "";
 
+  // Seconds since last update
+  lastUpdateSeconds$ : Observable<number> = of(0);
+
   @Input() timer: ExtendedTimerDetail | null = null;
   @Input() myLocation: number = -1;
   @Input() hideUnready: boolean = false;
@@ -48,6 +52,14 @@ export class TimerDetailComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     this.classTeam = getClassTeamString(this.timer?.db.class, this.timer?.db.team);
+    let t = this.timer;
+    if (t != null) {
+      let lastTimestamp = t.lastSeenAtTimestampMillis;
+      this.lastUpdateSeconds$ = timer(0, 1000)
+        .pipe(map(tick => Math.round((Date.now() - lastTimestamp) / 1000)));
+    } else {
+      this.lastUpdateSeconds$ = of(0);
+    }
 
     const unstartedRoll = this.timer == null || this.timer.lastSeenAt == null || this.timer.lastSeenAt < 0;
 

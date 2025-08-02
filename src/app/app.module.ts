@@ -34,7 +34,7 @@ import { BuggyThumbnailPipe } from './buggy-detail/buggy-detail';
 // Our UI Pieces
 import { MessagesComponent } from './messages/messages.component';
 import { BuggyConfigComponent } from './buggy-config/buggy-config.component';
-import { TimerComponent } from './timer/timer.component';
+import { TimerComponent, LocalTimerSort } from './timer/timer.component';
 import { BuggyDetailComponent } from './buggy-detail/buggy-detail.component';
 import { BuggyDialogComponent } from './buggy-dialog/buggy-dialog.component';
 import { TimerDetailComponent } from './timer-detail/timer-detail.component';
@@ -51,7 +51,7 @@ import { ClassPickerComponent } from './class-picker/class-picker.component';
     
     MessagesComponent,
     BuggyConfigComponent,
-    TimerComponent,
+    TimerComponent, LocalTimerSort,
     BuggyDetailComponent,
     BuggyDialogComponent,
     TimerDetailComponent,

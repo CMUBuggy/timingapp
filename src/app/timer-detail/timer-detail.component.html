@@ -10,7 +10,9 @@
         <mat-card-title-group>
           <mat-card-title>{{ timer.db.buggy.name }}</mat-card-title>
           <mat-card-subtitle>{{ timer.db.buggy.org }}</mat-card-subtitle>
-          <mat-card-subtitle><b>Last Recorded At: </b>{{ timer.lastSeenAtString }}</mat-card-subtitle>
+          <mat-card-subtitle><b>Last Recorded At: </b>{{ timer.lastSeenAtString }}
+            <span *ngIf="timer.lastSeenAt != null && timer.lastSeenAt >= 0">({{ lastUpdateSeconds$ | async }}s ago)</span>
+          </mat-card-subtitle>
           <img mat-card-sm-image *ngIf="timer.db.buggy.smugmugSlug" src="{{timer.db.buggy.smugmugSlug|buggyThumbnail}}">
         </mat-card-title-group>
     </mat-card-header>
