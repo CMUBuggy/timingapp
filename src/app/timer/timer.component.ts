@@ -217,8 +217,66 @@ export class TimerComponent {
       });
   }
 
-  multiStartGo(): void {
-    console.log("GO!");
+  async multiStartGo() {
+    if (this.courseLocationNumeric != 0) {
+      this.messageService.add("It is not valid to multistart at location: " + this.courseLocationNumeric);
+      return;
+    }
+
+    console.log("MultiStart GO for " + this.multiStartSelected.size + " timers.");
+
+    try {
+      await runInInjectionContext(this.injector, async () => {
+        await runTransaction(this.store, async (txn) => {
+          // Gather all the documents, then launch all the promises to
+          // execute them.
+          class MultiTimerData {
+            constructor(public timer : TimerDetail,
+                        public docRef : DocumentReference,
+                        public snap : DocumentSnapshot) {}
+          }
+          let docArray: MultiTimerData[] = [];
+          let fetchPromises: Promise<any>[] = [];
+
+          this.multiStartSelected.forEach((timer, timerid) => {
+            const docRef = doc(this.timerDataService.getTimerCollection(), timer.id);
+
+            console.log("MultiStart Marking time for: " + timer.id + " at '" +
+                        TIMING_SITE_NAMES[this.courseLocationNumeric] + "'");
+
+            fetchPromises.push(
+              txn.get(docRef).then((snap) => {
+                if (!snap.exists()) {
+                  return Promise.reject("Timer" + timer.id + "doesn't exist?");
+                }
+
+                docArray.push(new MultiTimerData(timer, docRef, snap));
+                return Promise.resolve();
+              }));
+          });
+
+          // Await the data coming back from firebase before we start any writes,
+          // so that the transaction remains valid.
+          await Promise.all(fetchPromises);
+
+          // Now start all the timers in one go.  Firestore guarantees that
+          // any serverTimestamp will be the same for the entire request.
+          docArray.forEach((item) => {
+            this.markOneTime(item.timer, item.docRef, item.snap, txn);
+          });
+        });
+        // This has to happen only after runTransaction is done!
+        console.log("MultiStart success, clearing selected timers...");
+        this.clearMultiStart();
+      });
+    } catch (e) {
+      console.log("MultiStart failure, clearing selected timers...");
+      this.clearMultiStart();
+
+      let error : string = "MultiStart Failed: " + e;
+      this.messageService.add(error);
+      return Promise.reject(error);
+    }
   }
 
   async markTime(timer: TimerDetail) {
@@ -252,10 +310,8 @@ export class TimerComponent {
 
     const docRef = runInInjectionContext(this.injector,
                       () => doc(this.timerDataService.getTimerCollection(), timer.id));
-    const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
-    const txnCourseLocation = this.courseLocationNumeric;
     console.log("Marking time for: " + timer.id + " at '" +
-                TIMING_SITE_NAMES[txnCourseLocation] + "' via " + updateKey);
+                TIMING_SITE_NAMES[this.courseLocationNumeric] + "'");
 
     try {
       await runInInjectionContext(this.injector, async () => {
@@ -265,7 +321,7 @@ export class TimerComponent {
             throw "Timer" + timer.id + "doesn't exist?";
           }
 
-          return this.markOneTime(timer, docRef, txnCourseLocation, updateKey, snap, txn);
+          return this.markOneTime(timer, docRef, snap, txn);
       })});
     } catch (e) {
       let error : string = "Mark Time Failed: " + e;
@@ -279,10 +335,11 @@ export class TimerComponent {
   // will write into the transaction.
   private async markOneTime(timer: TimerDetail,
                             docRef: DocumentReference,
-                            txnCourseLocation: number,
-                            updateKey: string,
                             snap : DocumentSnapshot,
                             txn : Transaction) {
+        const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
+        const txnCourseLocation = this.courseLocationNumeric;
+
         if (!snap.exists()) {
           throw "Timer" + timer.id + "doesn't exist?";
         }
