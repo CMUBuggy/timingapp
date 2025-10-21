@@ -10,17 +10,17 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^17.0.0",
-    "@angular/cdk": "^17.0.0",
-    "@angular/common": "^17.0.0",
-    "@angular/compiler": "^17.0.0",
-    "@angular/core": "^17.0.0",
-    "@angular/fire": "^17.1.0",
-    "@angular/forms": "^17.0.0",
-    "@angular/material": "^17.0.0",
-    "@angular/platform-browser": "^17.0.0",
-    "@angular/platform-browser-dynamic": "^17.0.0",
-    "@angular/router": "^17.0.0",
+    "@angular/animations": "^18.2.14",
+    "@angular/cdk": "^18.2.14",
+    "@angular/common": "^18.2.14",
+    "@angular/compiler": "^18.2.14",
+    "@angular/core": "^18.2.14",
+    "@angular/fire": "^18.0.1",
+    "@angular/forms": "^18.2.14",
+    "@angular/material": "^18.2.14",
+    "@angular/platform-browser": "^18.2.14",
+    "@angular/platform-browser-dynamic": "^18.2.14",
+    "@angular/router": "^18.2.14",
     "file-saver-es": "^2.0.5",
     "firebase-admin": "^12.7.0",
     "rxjs": "~7.8.0",
@@ -28,9 +28,9 @@
     "zone.js": "~0.14.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^17.0.6",
-    "@angular/cli": "^17.0.0",
-    "@angular/compiler-cli": "^17.0.0",
+    "@angular-devkit/build-angular": "^18.2.21",
+    "@angular/cli": "^18.2.21",
+    "@angular/compiler-cli": "^18.2.14",
     "@types/file-saver-es": "^2.0.3",
     "@types/jasmine": "~4.3.0",
     "jasmine-core": "~4.6.0",
@@ -39,6 +39,6 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.2.0"
+    "typescript": "~5.5.4"
   }
 }
