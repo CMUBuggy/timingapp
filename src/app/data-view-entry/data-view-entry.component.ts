@@ -6,9 +6,10 @@ import { AbsoluteMillisecondTimes, TimeSplitTenths,
          getAbsoluteMillisecondTimes, getTimingSplits } from '../timer-conversion.service';
 
 @Component({
-  selector: 'data-view-entry',
-  templateUrl: './data-view-entry.component.html',
-  styleUrls: ['./data-view-entry.component.css']
+    selector: 'data-view-entry',
+    templateUrl: './data-view-entry.component.html',
+    styleUrls: ['./data-view-entry.component.css'],
+    standalone: false
 })
 export class DataViewEntryComponent {
   // We use a getter and setter here to force recomputation when inputs change.

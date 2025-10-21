@@ -24,7 +24,10 @@ export function getRolledData(b: BuggyDetail): RolledBuggyDetail {
   return retVal;
 }
 
-@Pipe({ name: 'buggyThumbnail' })
+@Pipe({
+    name: 'buggyThumbnail',
+    standalone: false
+})
 export class BuggyThumbnailPipe implements PipeTransform {
   transform(slug: string): string {
     return "https://photos.smugmug.com/photos/"

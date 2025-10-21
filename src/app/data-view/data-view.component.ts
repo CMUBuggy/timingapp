@@ -10,9 +10,10 @@ import { TimerDataService } from '../timer-data.service'
 import { TimerConversionService } from '../timer-conversion.service';
 
 @Component({
-  selector: 'app-data-view',
-  templateUrl: './data-view.component.html',
-  styleUrls: ['./data-view.component.css']
+    selector: 'app-data-view',
+    templateUrl: './data-view.component.html',
+    styleUrls: ['./data-view.component.css'],
+    standalone: false
 })
 export class DataViewComponent {
   displayDate = new FormControl(new Date());

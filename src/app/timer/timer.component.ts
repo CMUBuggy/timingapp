@@ -18,7 +18,8 @@ import { TimerDataService } from '../timer-data.service';
 import { MessageService } from '../message.service';
 
 @Pipe({
-  name: 'localTimerSort'
+    name: 'localTimerSort',
+    standalone: false
 })
 export class LocalTimerSort {
   // The timer data we pull down from firestore is sorted by creation date.  However, for the
@@ -77,9 +78,10 @@ export class LocalTimerSort {
 }
 
 @Component({
-  selector: 'app-timer',
-  templateUrl: './timer.component.html',
-  styleUrls: ['./timer.component.css']
+    selector: 'app-timer',
+    templateUrl: './timer.component.html',
+    styleUrls: ['./timer.component.css'],
+    standalone: false
 })
 export class TimerComponent {
   // What a mess.  MatButtonToggle "functions as a checkbox" but isn't a boolean.  WTF.
