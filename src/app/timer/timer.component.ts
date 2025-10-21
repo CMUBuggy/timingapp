@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
-import { Component, Pipe, PipeTransform } from '@angular/core';
+import { Component, Pipe,
+         EnvironmentInjector, inject, runInInjectionContext } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 
@@ -98,6 +99,8 @@ export class TimerComponent {
   // the showAllUnfinished setting.  This means fewer DB reads.
   timers$ : Observable<ExtendedTimerDetail[]>;
 
+  private injector : EnvironmentInjector = inject(EnvironmentInjector);
+
   constructor(private dialog: MatDialog,
               private datePipe: DatePipe,
               private store: Firestore,
@@ -187,10 +190,10 @@ export class TimerComponent {
             newTimer.team = classResult.team
           }
 
-          addDoc(this.timerDataService.getTimerCollection(), newTimer)
-            .catch(error => {
-              this.messageService.add("New Roll Creation error: " + error);
-            });
+          runInInjectionContext(this.injector,
+            () => addDoc(this.timerDataService.getTimerCollection(), newTimer)
+                    .catch(error =>
+                      { this.messageService.add("New Roll Creation error: " + error); }));
         });
       });
   }
@@ -204,47 +207,48 @@ export class TimerComponent {
       return;
     }
 
-    const docRef = doc(this.timerDataService.getTimerCollection(),
-                       timer.id);
+    const docRef = runInInjectionContext(this.injector,
+                      () => doc(this.timerDataService.getTimerCollection(), timer.id));
     const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
     const txnCourseLocation = this.courseLocationNumeric;
     console.log("Marking time for: " + timer.id + " at '" +
                 TIMING_SITE_NAMES[txnCourseLocation] + "' via " + updateKey);
 
     try {
-      await runTransaction(this.store, async(txn) => {
-        const snap = await txn.get(docRef);
-        if (!snap.exists()) {
-          throw "Timer" + timer.id + "doesn't exist?";
-        }
+      await runInInjectionContext(this.injector, async () => {
+        runTransaction(this.store, async(txn) => {
+          const snap = await txn.get(docRef);
+          if (!snap.exists()) {
+            throw "Timer" + timer.id + "doesn't exist?";
+          }
 
-        const t = snap.data() as TimerDetail;
-        if (t.completed) {
-          return Promise.reject("Roll " + t.id + " Already Completed")
-        }
+          const t = snap.data() as TimerDetail;
+          if (t.completed) {
+            return Promise.reject("Roll " + t.id + " Already Completed")
+          }
 
-        const et = new ExtendedTimerDetail(t);
-        if (et.lastSeenAt != null && et.lastSeenAt >= txnCourseLocation) {
-          return Promise.reject("Roll " + timer.id + " has data at " +
-                                et.lastSeenAtString +
-                                " therefore update failed here at " +
-                                TIMING_SITE_NAMES[txnCourseLocation]);
-        }
+          const et = new ExtendedTimerDetail(t);
+          if (et.lastSeenAt != null && et.lastSeenAt >= txnCourseLocation) {
+            return Promise.reject("Roll " + timer.id + " has data at " +
+                                  et.lastSeenAtString +
+                                  " therefore update failed here at " +
+                                  TIMING_SITE_NAMES[txnCourseLocation]);
+          }
 
-        if (et.lastSeenAt == -1 && !([0, 2].includes(txnCourseLocation))) {
-          return Promise.reject("Roll " + timer.id + " not yet started and " +
-                                TIMING_SITE_NAMES[txnCourseLocation] +
-                                " is not a start location.")
-        }
+          if (et.lastSeenAt == -1 && !([0, 2].includes(txnCourseLocation))) {
+            return Promise.reject("Roll " + timer.id + " not yet started and " +
+                                  TIMING_SITE_NAMES[txnCourseLocation] +
+                                  " is not a start location.")
+          }
 
-        let myUpdate : any = { [updateKey]: serverTimestamp() };
-        if (txnCourseLocation == 8) {
-          // Logged time at finish line, we're done!
-          myUpdate.completed = true;
-        }
+          let myUpdate : any = { [updateKey]: serverTimestamp() };
+          if (txnCourseLocation == 8) {
+            // Logged time at finish line, we're done!
+            myUpdate.completed = true;
+          }
     
-        txn.update(docRef, myUpdate);
-      });
+          txn.update(docRef, myUpdate);
+      })});
     } catch (e) {
       this.messageService.add("Mark Time Failed: " + e);
     }
@@ -254,34 +258,35 @@ export class TimerComponent {
     // If there are no times logged yet, scratch means remove
     // entirely.
 
-    const docRef = doc(this.timerDataService.getTimerCollection(),
-                       timer.id);
+    const docRef = runInInjectionContext(this.injector,
+                     () => doc(this.timerDataService.getTimerCollection(), timer.id));
 
     try {
-      await runTransaction(this.store, async(txn) => {
-        const snap = await txn.get(docRef);
-        if (!snap.exists()) {
-          throw "Timer " + timer.id + " doesn't exist?";
-        }
-
-        const t = snap.data() as TimerDetail;
-        let foundOne = false;
-        let p: keyof CourseTimes;
-        for (p in t.absoluteTimes) {
-          if (t.absoluteTimes[p] != null) {
-            foundOne = true;
-            break;
+      await runInInjectionContext(this.injector, async () => {
+        runTransaction(this.store, async(txn) => {
+          const snap = await txn.get(docRef);
+          if (!snap.exists()) {
+            throw "Timer " + timer.id + " doesn't exist?";
           }
-        }
 
-        if (foundOne) {
-          // Roll has started, we issue an update.
-          txn.update(docRef, { completed: true });
-        } else {
-          // Roll not started, delete it.
-          txn.delete(docRef);
-        }
-      });
+          const t = snap.data() as TimerDetail;
+          let foundOne = false;
+          let p: keyof CourseTimes;
+          for (p in t.absoluteTimes) {
+            if (t.absoluteTimes[p] != null) {
+              foundOne = true;
+              break;
+            }
+          }
+
+          if (foundOne) {
+            // Roll has started, we issue an update.
+            txn.update(docRef, { completed: true });
+          } else {
+            // Roll not started, delete it.
+            txn.delete(docRef);
+          }
+      })});
     } catch (e) {
       this.messageService.add("Scratch/DNF Failed: " + e);
     }
@@ -289,31 +294,32 @@ export class TimerComponent {
 
   // Verify we are still the most recent location, then remove our time if so.
   async tryUndo(timer: TimerDetail) {
-    const docRef = doc(this.timerDataService.getTimerCollection(),
-                       timer.id);
+    const docRef = runInInjectionContext(this.injector,
+                     () => doc(this.timerDataService.getTimerCollection(), timer.id));
 
     const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
     const txnCourseLocation = this.courseLocationNumeric;
 
     try {
-      await runTransaction(this.store, async(txn) => {
-        const snap = await txn.get(docRef);
-        if (!snap.exists()) {
-          throw "Timer" + timer.id + "doesn't exist?";
-        }
+      await runInInjectionContext(this.injector, async () => {
+        runTransaction(this.store, async(txn) => {
+          const snap = await txn.get(docRef);
+          if (!snap.exists()) {
+            throw "Timer" + timer.id + "doesn't exist?";
+          }
 
-        const t = snap.data() as TimerDetail;
-        const et = new ExtendedTimerDetail(t);
-        if (et.lastSeenAt != null && et.lastSeenAt != txnCourseLocation) {
-          return Promise.reject("Roll was not last seen here.  It has a time from " +
-                                et.lastSeenAtString +
-                                " therefore we cannot undo at " +
-                                TIMING_SITE_NAMES[txnCourseLocation]);
-        }
+          const t = snap.data() as TimerDetail;
+          const et = new ExtendedTimerDetail(t);
+          if (et.lastSeenAt != null && et.lastSeenAt != txnCourseLocation) {
+            return Promise.reject("Roll was not last seen here.  It has a time from " +
+                                  et.lastSeenAtString +
+                                  " therefore we cannot undo at " +
+                                  TIMING_SITE_NAMES[txnCourseLocation]);
+          }
 
-        let myUpdate : any = { [updateKey]: null };
-        txn.update(docRef, myUpdate);
-      });
+          let myUpdate : any = { [updateKey]: null };
+          txn.update(docRef, myUpdate);
+      })});
     } catch (e) {
       this.messageService.add("Undo Failed: " + e);
     }
