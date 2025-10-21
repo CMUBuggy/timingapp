@@ -2,7 +2,7 @@
 <mat-card class="timer-card" *ngIf="timer && (!clickTooEarly || !hideUnready)" style="margin:2em"
           [ngStyle]="clickInvalid ? { 'background-color': 'darkgrey' } :
                      clickTooEarly ? { 'background-color': 'wheat' } : 
-                     multiSelected ? { 'background-color': 'lime' } : null">
+                     multiSelected ? { 'background-color': 'seagreen' } : null">
     <mat-card-header (click)="markTime()"
                      (keydown.enter)="markTime()"
                      role="button"

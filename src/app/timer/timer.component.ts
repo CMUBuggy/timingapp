@@ -6,7 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { Firestore, doc,
          addDoc, runTransaction,
-         serverTimestamp, //} from '@angular/fire/firestore';
+         serverTimestamp,
          DocumentReference,
          DocumentSnapshot,
          Transaction } from '@angular/fire/firestore';
@@ -95,7 +95,7 @@ export class TimerComponent {
   showPastMe: boolean = false;
   
   multiStartEnabled: boolean = false;
-  multiStartSelected: Set<string> = new Set<string>();
+  multiStartSelected: Map<string, TimerDetail> = new Map<string, TimerDetail>();
 
   courseLocation: string = "";
   courseLocationNumeric: number = -1;
@@ -119,6 +119,10 @@ export class TimerComponent {
     this.changeFilters();
   }
 
+  private clearMultiStart(): void {
+    this.multiStartSelected = new Map<string, TimerDetail>();
+  }
+
   // Update the location tag based on the drop down.
   changeLocation(): void {
     const VALID_LOCATION_TAGS = ["0", "1", "2", "3", "4", "5", "6", "7", "8"];
@@ -131,11 +135,12 @@ export class TimerComponent {
 
     // New location always resets multistart to false.
     this.multiStartEnabled = false;
-    this.multiStartSelected = new Set<string>();
+    this.clearMultiStart();
   }
 
   toggleMultiStart(): void {
     this.multiStartEnabled = !this.multiStartEnabled;
+    this.clearMultiStart();
   }
 
   changeFilters(): void {
@@ -239,7 +244,7 @@ export class TimerComponent {
       if(this.multiStartSelected.has(timer.id)) {
         this.multiStartSelected.delete(timer.id);
       } else {
-        this.multiStartSelected.add(timer.id);
+        this.multiStartSelected.set(timer.id, timer);
       }
 
       return;
