@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component,
+         EnvironmentInjector, inject, runInInjectionContext } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 
@@ -24,6 +25,8 @@ export class BuggyConfigComponent {
   buggies$: Observable<BuggyDetail[]>;
   orgList$: Observable<string[]>;
 
+  private injector : EnvironmentInjector = inject(EnvironmentInjector);
+
   constructor(
     private dialog: MatDialog,
     private store: Firestore,
@@ -46,7 +49,8 @@ export class BuggyConfigComponent {
         if (!result) {
           return;
         }
-        addDoc(this.buggyCollection, result.buggy);
+        runInInjectionContext(this.injector,
+          () => addDoc(this.buggyCollection, result.buggy));
       });
   }
 
@@ -66,7 +70,8 @@ export class BuggyConfigComponent {
       delete updatedBuggy.id; // give a hoot, don't pollute.
 
       // Note: Not a transaction, force DB to fit the current UI.
-      setDoc(doc(this.buggyCollection, buggy.id), updatedBuggy);
+      runInInjectionContext(this.injector, 
+        () => setDoc(doc(this.buggyCollection, buggy.id), updatedBuggy));
     });
   }
 
@@ -74,10 +79,12 @@ export class BuggyConfigComponent {
     // Note: Not a transaction, force to fit the current UI.
     buggy.active = !buggy.active;  // Update the current state before firestore catches up.
 
-    updateDoc(doc(this.buggyCollection, buggy.id), { active: buggy.active });
+    runInInjectionContext(this.injector,
+      () => updateDoc(doc(this.buggyCollection, buggy.id), { active: buggy.active }));
   }
 
   deleteBuggy(buggy: BuggyDetail) {
-    deleteDoc(doc(this.buggyCollection, buggy.id));
+    runInInjectionContext(this.injector,
+      () => deleteDoc(doc(this.buggyCollection, buggy.id)));
   }
 }
