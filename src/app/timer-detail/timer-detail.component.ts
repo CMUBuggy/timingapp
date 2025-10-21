@@ -39,6 +39,7 @@ export class TimerDetailComponent implements OnChanges {
   @Input() timer: ExtendedTimerDetail | null = null;
   @Input() myLocation: number = -1;
   @Input() hideUnready: boolean = false;
+  @Input() multiSelected: boolean = false;
   @Output() timeevent = new EventEmitter<TimerDetail>();
   @Output() scratch = new EventEmitter<TimerDetail>();
   @Output() undo = new EventEmitter<TimerDetail>();

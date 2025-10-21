@@ -6,7 +6,10 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { Firestore, doc,
          addDoc, runTransaction,
-         serverTimestamp } from '@angular/fire/firestore';
+         serverTimestamp, //} from '@angular/fire/firestore';
+         DocumentReference,
+         DocumentSnapshot,
+         Transaction } from '@angular/fire/firestore';
 
 import { Observable } from 'rxjs';
 
@@ -90,6 +93,9 @@ export class TimerComponent {
   showAllFilters: string[] = ["unready"];
   hideUnready: boolean = false;
   showPastMe: boolean = false;
+  
+  multiStartEnabled: boolean = false;
+  multiStartSelected: Set<string> = new Set<string>();
 
   courseLocation: string = "";
   courseLocationNumeric: number = -1;
@@ -122,6 +128,14 @@ export class TimerComponent {
     } else {
       this.courseLocationNumeric = Number(locationTag);
     }
+
+    // New location always resets multistart to false.
+    this.multiStartEnabled = false;
+    this.multiStartSelected = new Set<string>();
+  }
+
+  toggleMultiStart(): void {
+    this.multiStartEnabled = !this.multiStartEnabled;
   }
 
   changeFilters(): void {
@@ -198,12 +212,36 @@ export class TimerComponent {
       });
   }
 
+  multiStartGo(): void {
+    console.log("GO!");
+  }
+
   async markTime(timer: TimerDetail) {
     // This first error is really the only one we can safely detect outside the
     // transaction context, since it indicates our local state isn't properly
     // configured.
     if (this.courseLocationNumeric < 0 || this.courseLocationNumeric > 8) {
       this.messageService.add("Not logging time, invalid location id: " + this.courseLocationNumeric);
+      return;
+    }
+
+    // Multistart markTime just means we store the id until we're ready to go.
+    if (this.multiStartEnabled) {
+      if(timer.id == undefined) {
+        this.messageService.add("markTime without an id?");
+        return;
+      }
+      if (this.courseLocationNumeric != 0) {
+        this.messageService.add("multiStart not at start line?");
+        return;
+      }
+
+      if(this.multiStartSelected.has(timer.id)) {
+        this.multiStartSelected.delete(timer.id);
+      } else {
+        this.multiStartSelected.add(timer.id);
+      }
+
       return;
     }
 
@@ -222,36 +260,55 @@ export class TimerComponent {
             throw "Timer" + timer.id + "doesn't exist?";
           }
 
-          const t = snap.data() as TimerDetail;
-          if (t.completed) {
-            return Promise.reject("Roll " + t.id + " Already Completed")
-          }
-
-          const et = new ExtendedTimerDetail(t);
-          if (et.lastSeenAt != null && et.lastSeenAt >= txnCourseLocation) {
-            return Promise.reject("Roll " + timer.id + " has data at " +
-                                  et.lastSeenAtString +
-                                  " therefore update failed here at " +
-                                  TIMING_SITE_NAMES[txnCourseLocation]);
-          }
-
-          if (et.lastSeenAt == -1 && !([0, 2].includes(txnCourseLocation))) {
-            return Promise.reject("Roll " + timer.id + " not yet started and " +
-                                  TIMING_SITE_NAMES[txnCourseLocation] +
-                                  " is not a start location.")
-          }
-
-          let myUpdate : any = { [updateKey]: serverTimestamp() };
-          if (txnCourseLocation == 8) {
-            // Logged time at finish line, we're done!
-            myUpdate.completed = true;
-          }
-    
-          txn.update(docRef, myUpdate);
+          return this.markOneTime(timer, docRef, txnCourseLocation, updateKey, snap, txn);
       })});
     } catch (e) {
-      this.messageService.add("Mark Time Failed: " + e);
+      let error : string = "Mark Time Failed: " + e;
+      this.messageService.add(error);
+      return Promise.reject(error);
     }
+  }
+
+  // This method will update a single timer within a transaction and return the promise for that.
+  // Remember that all reads for the transaction must be done before this method is called, as it
+  // will write into the transaction.
+  private async markOneTime(timer: TimerDetail,
+                            docRef: DocumentReference,
+                            txnCourseLocation: number,
+                            updateKey: string,
+                            snap : DocumentSnapshot,
+                            txn : Transaction) {
+        if (!snap.exists()) {
+          throw "Timer" + timer.id + "doesn't exist?";
+        }
+
+        const t = snap.data() as TimerDetail;
+        if (t.completed) {
+          return Promise.reject("Roll " + t.id + " Already Completed")
+        }
+
+        const et = new ExtendedTimerDetail(t);
+        if (et.lastSeenAt != null && et.lastSeenAt >= txnCourseLocation) {
+          return Promise.reject("Roll " + timer.id + " has data at " +
+                                et.lastSeenAtString +
+                                " therefore update failed here at " +
+                                TIMING_SITE_NAMES[txnCourseLocation]);
+        }
+
+        if (et.lastSeenAt == -1 && !([0, 2].includes(txnCourseLocation))) {
+          return Promise.reject("Roll " + timer.id + " not yet started and " +
+                                TIMING_SITE_NAMES[txnCourseLocation] +
+                                " is not a start location.")
+        }
+
+        let myUpdate : any = { [updateKey]: serverTimestamp() };
+        if (txnCourseLocation == 8) {
+          // Logged time at finish line, we're done!
+          myUpdate.completed = true;
+        }
+    
+        txn.update(docRef, myUpdate);
+        return Promise.resolve();
   }
 
   async scratchRoll(timer: TimerDetail) {
