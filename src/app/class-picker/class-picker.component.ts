@@ -2,9 +2,10 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-class-picker',
-  templateUrl: './class-picker.component.html',
-  styleUrls: ['./class-picker.component.css']
+    selector: 'app-class-picker',
+    templateUrl: './class-picker.component.html',
+    styleUrls: ['./class-picker.component.css'],
+    standalone: false
 })
 export class ClassPickerComponent {
   class: string = "A";

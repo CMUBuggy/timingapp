@@ -6,9 +6,10 @@ const SCRATCH_TEXT: string = "Scratch";
 const END_ROLL_TEXT: string = "DNF";
 
 @Component({
-  selector: 'timer-detail',
-  templateUrl: './timer-detail.component.html',
-  styleUrls: ['./timer-detail.component.css']
+    selector: 'timer-detail',
+    templateUrl: './timer-detail.component.html',
+    styleUrls: ['./timer-detail.component.css'],
+    standalone: false
 })
 export class TimerDetailComponent implements OnChanges {
   // Can't click because my location is invalid or buggy past my location

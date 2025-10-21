@@ -8,9 +8,10 @@ import { BuggyDataService } from '../buggy-data.service';
 
 
 @Component({
-  selector: 'app-buggy-picker',
-  templateUrl: './buggy-picker.component.html',
-  styleUrls: ['./buggy-picker.component.css']
+    selector: 'app-buggy-picker',
+    templateUrl: './buggy-picker.component.html',
+    styleUrls: ['./buggy-picker.component.css'],
+    standalone: false
 })
 export class BuggyPickerComponent {
   filteredOrg: string;

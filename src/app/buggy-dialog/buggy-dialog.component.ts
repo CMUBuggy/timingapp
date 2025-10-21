@@ -3,9 +3,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BuggyDetail } from '../buggy-detail/buggy-detail';
 
 @Component({
-  selector: 'app-buggy-dialog',
-  templateUrl: './buggy-dialog.component.html',
-  styleUrls: ['./buggy-dialog.component.css'],
+    selector: 'app-buggy-dialog',
+    templateUrl: './buggy-dialog.component.html',
+    styleUrls: ['./buggy-dialog.component.css'],
+    standalone: false
 })
 export class BuggyDialogComponent {
   public workingBuggy: Partial<BuggyDetail> = { ...this.inputData.buggy };

@@ -12,9 +12,10 @@ import { Observable } from 'rxjs';
 import { BuggyDataService } from '../buggy-data.service';
 
 @Component({
-  selector: 'app-buggy-config',
-  templateUrl: './buggy-config.component.html',
-  styleUrls: ['./buggy-config.component.css']
+    selector: 'app-buggy-config',
+    templateUrl: './buggy-config.component.html',
+    styleUrls: ['./buggy-config.component.css'],
+    standalone: false
 })
 export class BuggyConfigComponent {
   buggyCollection : CollectionReference = collection(this.store, 'Buggies');

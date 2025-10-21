@@ -37,7 +37,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1300kb",
+                  "maximumWarning": "1400kb",
                   "maximumError": "2mb"
                 },
                 {
@@ -67,10 +67,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "buggy-timing:build:production"
+              "buildTarget": "buggy-timing:build:production"
             },
             "development": {
-              "browserTarget": "buggy-timing:build:development"
+              "buildTarget": "buggy-timing:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -78,7 +78,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "buggy-timing:build"
+            "buildTarget": "buggy-timing:build"
           }
         },
         "test": {
