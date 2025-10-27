@@ -6,7 +6,10 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { Firestore, doc,
          addDoc, runTransaction,
-         serverTimestamp } from '@angular/fire/firestore';
+         serverTimestamp,
+         DocumentReference,
+         DocumentSnapshot,
+         Transaction } from '@angular/fire/firestore';
 
 import { Observable } from 'rxjs';
 
@@ -90,6 +93,9 @@ export class TimerComponent {
   showAllFilters: string[] = ["unready"];
   hideUnready: boolean = false;
   showPastMe: boolean = false;
+  
+  multiStartEnabled: boolean = false;
+  multiStartSelected: Map<string, TimerDetail> = new Map<string, TimerDetail>();
 
   courseLocation: string = "";
   courseLocationNumeric: number = -1;
@@ -113,6 +119,10 @@ export class TimerComponent {
     this.changeFilters();
   }
 
+  private clearMultiStart(): void {
+    this.multiStartSelected = new Map<string, TimerDetail>();
+  }
+
   // Update the location tag based on the drop down.
   changeLocation(): void {
     const VALID_LOCATION_TAGS = ["0", "1", "2", "3", "4", "5", "6", "7", "8"];
@@ -122,6 +132,15 @@ export class TimerComponent {
     } else {
       this.courseLocationNumeric = Number(locationTag);
     }
+
+    // New location always resets multistart to false.
+    this.multiStartEnabled = false;
+    this.clearMultiStart();
+  }
+
+  toggleMultiStart(): void {
+    this.multiStartEnabled = !this.multiStartEnabled;
+    this.clearMultiStart();
   }
 
   changeFilters(): void {
@@ -198,6 +217,68 @@ export class TimerComponent {
       });
   }
 
+  async multiStartGo() {
+    if (this.courseLocationNumeric != 0) {
+      this.messageService.add("It is not valid to multistart at location: " + this.courseLocationNumeric);
+      return;
+    }
+
+    console.log("MultiStart GO for " + this.multiStartSelected.size + " timers.");
+
+    try {
+      await runInInjectionContext(this.injector, async () => {
+        await runTransaction(this.store, async (txn) => {
+          // Gather all the documents, then launch all the promises to
+          // execute them.
+          class MultiTimerData {
+            constructor(public timer : TimerDetail,
+                        public docRef : DocumentReference,
+                        public snap : DocumentSnapshot) {}
+          }
+          let docArray: MultiTimerData[] = [];
+          let fetchPromises: Promise<any>[] = [];
+
+          this.multiStartSelected.forEach((timer, timerid) => {
+            const docRef = doc(this.timerDataService.getTimerCollection(), timer.id);
+
+            console.log("MultiStart Marking time for: " + timer.id + " at '" +
+                        TIMING_SITE_NAMES[this.courseLocationNumeric] + "'");
+
+            fetchPromises.push(
+              txn.get(docRef).then((snap) => {
+                if (!snap.exists()) {
+                  return Promise.reject("Timer" + timer.id + "doesn't exist?");
+                }
+
+                docArray.push(new MultiTimerData(timer, docRef, snap));
+                return Promise.resolve();
+              }));
+          });
+
+          // Await the data coming back from firebase before we start any writes,
+          // so that the transaction remains valid.
+          await Promise.all(fetchPromises);
+
+          // Now start all the timers in one go.  Firestore guarantees that
+          // any serverTimestamp will be the same for the entire request.
+          docArray.forEach((item) => {
+            this.markOneTime(item.timer, item.docRef, item.snap, txn);
+          });
+        });
+        // This has to happen only after runTransaction is done!
+        console.log("MultiStart success, clearing selected timers...");
+        this.clearMultiStart();
+      });
+    } catch (e) {
+      console.log("MultiStart failure, clearing selected timers...");
+      this.clearMultiStart();
+
+      let error : string = "MultiStart Failed: " + e;
+      this.messageService.add(error);
+      return Promise.reject(error);
+    }
+  }
+
   async markTime(timer: TimerDetail) {
     // This first error is really the only one we can safely detect outside the
     // transaction context, since it indicates our local state isn't properly
@@ -207,12 +288,30 @@ export class TimerComponent {
       return;
     }
 
+    // Multistart markTime just means we store the id until we're ready to go.
+    if (this.multiStartEnabled) {
+      if(timer.id == undefined) {
+        this.messageService.add("markTime without an id?");
+        return;
+      }
+      if (this.courseLocationNumeric != 0) {
+        this.messageService.add("multiStart not at start line?");
+        return;
+      }
+
+      if(this.multiStartSelected.has(timer.id)) {
+        this.multiStartSelected.delete(timer.id);
+      } else {
+        this.multiStartSelected.set(timer.id, timer);
+      }
+
+      return;
+    }
+
     const docRef = runInInjectionContext(this.injector,
                       () => doc(this.timerDataService.getTimerCollection(), timer.id));
-    const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
-    const txnCourseLocation = this.courseLocationNumeric;
     console.log("Marking time for: " + timer.id + " at '" +
-                TIMING_SITE_NAMES[txnCourseLocation] + "' via " + updateKey);
+                TIMING_SITE_NAMES[this.courseLocationNumeric] + "'");
 
     try {
       await runInInjectionContext(this.injector, async () => {
@@ -222,36 +321,56 @@ export class TimerComponent {
             throw "Timer" + timer.id + "doesn't exist?";
           }
 
-          const t = snap.data() as TimerDetail;
-          if (t.completed) {
-            return Promise.reject("Roll " + t.id + " Already Completed")
-          }
-
-          const et = new ExtendedTimerDetail(t);
-          if (et.lastSeenAt != null && et.lastSeenAt >= txnCourseLocation) {
-            return Promise.reject("Roll " + timer.id + " has data at " +
-                                  et.lastSeenAtString +
-                                  " therefore update failed here at " +
-                                  TIMING_SITE_NAMES[txnCourseLocation]);
-          }
-
-          if (et.lastSeenAt == -1 && !([0, 2].includes(txnCourseLocation))) {
-            return Promise.reject("Roll " + timer.id + " not yet started and " +
-                                  TIMING_SITE_NAMES[txnCourseLocation] +
-                                  " is not a start location.")
-          }
-
-          let myUpdate : any = { [updateKey]: serverTimestamp() };
-          if (txnCourseLocation == 8) {
-            // Logged time at finish line, we're done!
-            myUpdate.completed = true;
-          }
-    
-          txn.update(docRef, myUpdate);
+          return this.markOneTime(timer, docRef, snap, txn);
       })});
     } catch (e) {
-      this.messageService.add("Mark Time Failed: " + e);
+      let error : string = "Mark Time Failed: " + e;
+      this.messageService.add(error);
+      return Promise.reject(error);
     }
+  }
+
+  // This method will update a single timer within a transaction and return the promise for that.
+  // Remember that all reads for the transaction must be done before this method is called, as it
+  // will write into the transaction.
+  private async markOneTime(timer: TimerDetail,
+                            docRef: DocumentReference,
+                            snap : DocumentSnapshot,
+                            txn : Transaction) {
+        const updateKey = "absoluteTimes.T" + this.courseLocationNumeric;
+        const txnCourseLocation = this.courseLocationNumeric;
+
+        if (!snap.exists()) {
+          throw "Timer" + timer.id + "doesn't exist?";
+        }
+
+        const t = snap.data() as TimerDetail;
+        if (t.completed) {
+          return Promise.reject("Roll " + t.id + " Already Completed")
+        }
+
+        const et = new ExtendedTimerDetail(t);
+        if (et.lastSeenAt != null && et.lastSeenAt >= txnCourseLocation) {
+          return Promise.reject("Roll " + timer.id + " has data at " +
+                                et.lastSeenAtString +
+                                " therefore update failed here at " +
+                                TIMING_SITE_NAMES[txnCourseLocation]);
+        }
+
+        if (et.lastSeenAt == -1 && !([0, 2].includes(txnCourseLocation))) {
+          return Promise.reject("Roll " + timer.id + " not yet started and " +
+                                TIMING_SITE_NAMES[txnCourseLocation] +
+                                " is not a start location.")
+        }
+
+        let myUpdate : any = { [updateKey]: serverTimestamp() };
+        if (txnCourseLocation == 8) {
+          // Logged time at finish line, we're done!
+          myUpdate.completed = true;
+        }
+    
+        txn.update(docRef, myUpdate);
+        return Promise.resolve();
   }
 
   async scratchRoll(timer: TimerDetail) {
