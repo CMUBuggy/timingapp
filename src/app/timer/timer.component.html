@@ -21,12 +21,13 @@
     </div>
     <ng-container *ngIf="courseLocationNumeric == 0">
       <button mat-flat-button (click)="toggleMultiStart()"
-              *ngIf="!multiStartEnabled" color="primary">Enable MultiStart</button>
+              *ngIf="!multiStartEnabled" color="primary">Enable HeatMode</button>
 
       <ng-container *ngIf="multiStartEnabled">
         <button mat-flat-button (click)="toggleMultiStart()"
-                color="primary">Disable MultiStart</button>
+                color="primary">Disable HeatMode</button>
         &nbsp;<button mat-flat-button (click)="multiStartGo()" *ngIf="multiStartEnabled"
+                      [disabled]="multiStartSelected.size == 0"
                       color="warn">Start Race</button>
       </ng-container>
       <hr>
