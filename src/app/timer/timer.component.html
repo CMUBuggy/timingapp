@@ -1,48 +1,53 @@
 <div>
-    <div>
-      <mat-form-field>
-        <mat-label>Position</mat-label>
-        <mat-select [(ngModel)]="courseLocation" (selectionChange)="changeLocation()">
-          <mat-option value="0">Start Line</mat-option>
-          <mat-option value="1">1-2 Transition</mat-option>
-          <mat-option value="2">Crosswalk</mat-option>
-          <mat-option value="3">Stop Sign</mat-option>
-          <mat-option value="4">Chute Flag</mat-option>
-          <mat-option value="5">Hill 3 Line</mat-option>
-          <mat-option value="6">3-4 Transition</mat-option>
-          <mat-option value="7">4-5 Transition</mat-option>
-          <mat-option value="8">Finish Line</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-button-toggle-group style="margin:4px" [(ngModel)]="showAllFilters" (change)="changeFilters()" multiple>
-        <mat-button-toggle value="unready">Unready</mat-button-toggle>
-        <mat-button-toggle value="pastme">Unfinished</mat-button-toggle>
-      </mat-button-toggle-group>
-    </div>
-    <ng-container *ngIf="courseLocationNumeric == 0">
+  <div>
+    <mat-form-field>
+      <mat-label>Position</mat-label>
+      <mat-select [(ngModel)]="courseLocation" (selectionChange)="changeLocation()">
+        <mat-option value="0">Start Line</mat-option>
+        <mat-option value="1">1-2 Transition</mat-option>
+        <mat-option value="2">Crosswalk</mat-option>
+        <mat-option value="3">Stop Sign</mat-option>
+        <mat-option value="4">Chute Flag</mat-option>
+        <mat-option value="5">Hill 3 Line</mat-option>
+        <mat-option value="6">3-4 Transition</mat-option>
+        <mat-option value="7">4-5 Transition</mat-option>
+        <mat-option value="8">Finish Line</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-button-toggle-group style="margin:4px" [(ngModel)]="showAllFilters" (change)="changeFilters()" multiple>
+      <mat-button-toggle value="unready">Unready</mat-button-toggle>
+      <mat-button-toggle value="pastme">Unfinished</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+  @if (courseLocationNumeric == 0) {
+    @if (!multiStartEnabled) {
       <button mat-flat-button (click)="toggleMultiStart()"
-              *ngIf="!multiStartEnabled" color="primary">Enable HeatMode</button>
-
-      <ng-container *ngIf="multiStartEnabled">
-        <button mat-flat-button (click)="toggleMultiStart()"
-                color="primary">Disable HeatMode</button>
-        &nbsp;<button mat-flat-button (click)="multiStartGo()" *ngIf="multiStartEnabled"
-                      [disabled]="multiStartSelected.size == 0"
-                      color="warn">Start Race</button>
-      </ng-container>
-      <hr>
-    </ng-container>
+      color="primary">Enable HeatMode</button>
+    }
+    @if (multiStartEnabled) {
+      <button mat-flat-button (click)="toggleMultiStart()"
+      color="primary">Disable HeatMode</button>
+      &nbsp;@if (multiStartEnabled) {
+      <button mat-flat-button (click)="multiStartGo()"
+        [disabled]="multiStartSelected.size == 0"
+      color="warn">Start Race</button>
+    }
+  }
+  <hr>
+  }
 </div>
 <div>
-<button (click)="addRoll()" mat-button>
+  <button (click)="addRoll()" mat-button>
     <mat-icon>add</mat-icon> Roll A Buggy
-</button>
+  </button>
 </div>
-<ng-container *ngFor="let t of timers$ | async | localTimerSort">
-  <timer-detail *ngIf="showPastMe ||
-                       (t.lastSeenAt != null && t.lastSeenAt == -1) ||
-                       (t.lastSeenAt != null && courseLocationNumeric > 0 && t.lastSeenAt < courseLocationNumeric)"
-                [timer]="t" [myLocation]="courseLocationNumeric" [hideUnready]="hideUnready"
-                [multiSelected]="t.db.id != undefined && multiStartSelected.has(t.db.id)"
-                (scratch)="scratchRoll($event)" (timeevent)="markTime(t.db)" (undo)="tryUndo(t.db)"></timer-detail>
-</ng-container>
+@for (t of timers$ | async | localTimerSort; track t) {
+  @if (showPastMe ||
+    (t.lastSeenAt != null && t.lastSeenAt == -1) ||
+    (t.lastSeenAt != null && courseLocationNumeric > 0 && t.lastSeenAt < courseLocationNumeric)) {
+    <timer-detail
+      [timer]="t" [myLocation]="courseLocationNumeric" [hideUnready]="hideUnready"
+      [multiSelected]="t.db.id != undefined && multiStartSelected.has(t.db.id)"
+    (scratch)="scratchRoll($event)" (timeevent)="markTime(t.db)" (undo)="tryUndo(t.db)"></timer-detail>
+  }
+}

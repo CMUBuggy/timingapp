@@ -1,4 +1,5 @@
-<mat-card *ngIf="timer" style="margin:2em">
+@if (timer) {
+  <mat-card style="margin:2em">
     <mat-card-header>
       <mat-card-title-group>
         <mat-card-title>{{ timer.buggy.name }}</mat-card-title>
@@ -6,44 +7,83 @@
       </mat-card-title-group>
     </mat-card-header>
     <mat-card-content>
-      <ng-container *ngIf="!_timer?.completed; else notpending">
+      @if (!_timer?.completed) {
         <span class="pending">Roll Pending</span>
-      </ng-container>
-      <ng-template #notpending>
-        <ng-container *ngIf="_abs?.T8 == null; else finished">
+      } @else {
+        @if (_abs?.T8 == null) {
           <span class="dnf">Roll Result: DNF</span>
-        </ng-container>
-      </ng-template>
-      <ng-template #finished>
-        <span class="completed">Roll Result: Completed</span>
-      </ng-template>
+        } @else {
+          <span class="completed">Roll Result: Completed</span>
+        }
+      }
       <ul>
-        <li *ngIf="_abs?.T0 != null"><b>Start</b>: {{ _abs?.T0 | date:'mediumTime' }}</li>
-        <li *ngIf="_abs?.T1 != null"><b>1-2 Transition</b>: {{ _abs?.T1 | date:'mediumTime' }}</li>
-        <li *ngIf="_abs?.T2 != null"><b>Crosswalk</b>: {{ _abs?.T2| date:'mediumTime' }}</li>
-        <li *ngIf="_abs?.T3 != null"><b>Stop Sign</b>: {{ _abs?.T3 | date:'mediumTime' }}</li>
-        <li *ngIf="_abs?.T4 != null"><b>Chute Flag</b>: {{ _abs?.T4 | date:'mediumTime' }}</li>
-        <li *ngIf="_abs?.T5 != null"><b>Hill 3 Line</b>: {{ _abs?.T5 | date:'mediumTime' }}</li>
-        <li *ngIf="_abs?.T6 != null"><b>3-4 Transition</b>: {{ _abs?.T6 | date:'mediumTime' }}</li>
-        <li *ngIf="_abs?.T7 != null"><b>4-5 Transition</b>: {{ _abs?.T7 | date:'mediumTime' }}</li>
-        <li *ngIf="_abs?.T8 != null"><b>Finish</b>: {{ _abs?.T8 | date:'mediumTime' }}</li>
+        @if (_abs?.T0 != null) {
+          <li><b>Start</b>: {{ _abs?.T0 | date:'mediumTime' }}</li>
+        }
+        @if (_abs?.T1 != null) {
+          <li><b>1-2 Transition</b>: {{ _abs?.T1 | date:'mediumTime' }}</li>
+        }
+        @if (_abs?.T2 != null) {
+          <li><b>Crosswalk</b>: {{ _abs?.T2| date:'mediumTime' }}</li>
+        }
+        @if (_abs?.T3 != null) {
+          <li><b>Stop Sign</b>: {{ _abs?.T3 | date:'mediumTime' }}</li>
+        }
+        @if (_abs?.T4 != null) {
+          <li><b>Chute Flag</b>: {{ _abs?.T4 | date:'mediumTime' }}</li>
+        }
+        @if (_abs?.T5 != null) {
+          <li><b>Hill 3 Line</b>: {{ _abs?.T5 | date:'mediumTime' }}</li>
+        }
+        @if (_abs?.T6 != null) {
+          <li><b>3-4 Transition</b>: {{ _abs?.T6 | date:'mediumTime' }}</li>
+        }
+        @if (_abs?.T7 != null) {
+          <li><b>4-5 Transition</b>: {{ _abs?.T7 | date:'mediumTime' }}</li>
+        }
+        @if (_abs?.T8 != null) {
+          <li><b>Finish</b>: {{ _abs?.T8 | date:'mediumTime' }}</li>
+        }
       </ul>
       <hr>
-      <ul>
-        <li *ngIf="_splits?.hill1 != null"><b>Hill 1:</b> {{ _splits?.hill1 }}s</li>
-        <li *ngIf="_splits?.hill2 != null"><b>Hill 2:</b> {{ _splits?.hill2 }}s</li>
-        <li *ngIf="_splits?.hill3 != null"><b>Hill 3:</b> {{ _splits?.hill3 }}s</li>
-        <li *ngIf="_splits?.hill4 != null"><b>Hill 4:</b> {{ _splits?.hill4 }}s</li>
-        <li *ngIf="_splits?.hill5 != null"><b>Hill 5:</b> {{ _splits?.hill5 }}s</li>
-
-        <li *ngIf="_splits?.fronthills != null"><b>Fronthills:</b> {{ _splits?.fronthills }}s</li>
-        <li *ngIf="_splits?.stopsign != null"><b>Stop Sign:</b> {{ _splits?.stopsign }}s</li>
-        <li *ngIf="_splits?.crosswalkStop != null"><b>Crosswalk-Stop Sign:</b> {{ _splits?.crosswalkStop }}s</li>
-        <li *ngIf="_splits?.freeroll != null"><b>Freeroll:</b> {{ _splits?.freeroll }}s</li>
-        <li *ngIf="_splits?.backhills != null"><b>Backhills:</b> {{ _splits?.backhills }}s</li>
-
-        <li *ngIf="_splits?.crosswalkFull != null"><b>Crosswalk-Finish:</b> {{ _splits?.crosswalkFull }}s</li>
-        <li *ngIf="_splits?.full != null"><b>Full:</b> {{ _splits?.full }}s</li>
-      </ul>
-    </mat-card-content>
-</mat-card>
+        <ul>
+          @if (_splits?.hill1 != null) {
+            <li><b>Hill 1:</b> {{ _splits?.hill1 }}s</li>
+          }
+          @if (_splits?.hill2 != null) {
+            <li><b>Hill 2:</b> {{ _splits?.hill2 }}s</li>
+          }
+          @if (_splits?.hill3 != null) {
+            <li><b>Hill 3:</b> {{ _splits?.hill3 }}s</li>
+          }
+          @if (_splits?.hill4 != null) {
+            <li><b>Hill 4:</b> {{ _splits?.hill4 }}s</li>
+          }
+          @if (_splits?.hill5 != null) {
+            <li><b>Hill 5:</b> {{ _splits?.hill5 }}s</li>
+          }
+          @if (_splits?.fronthills != null) {
+            <li><b>Fronthills:</b> {{ _splits?.fronthills }}s</li>
+          }
+          @if (_splits?.stopsign != null) {
+            <li><b>Stop Sign:</b> {{ _splits?.stopsign }}s</li>
+          }
+          @if (_splits?.crosswalkStop != null) {
+            <li><b>Crosswalk-Stop Sign:</b> {{ _splits?.crosswalkStop }}s</li>
+          }
+          @if (_splits?.freeroll != null) {
+            <li><b>Freeroll:</b> {{ _splits?.freeroll }}s</li>
+          }
+          @if (_splits?.backhills != null) {
+            <li><b>Backhills:</b> {{ _splits?.backhills }}s</li>
+          }
+          @if (_splits?.crosswalkFull != null) {
+            <li><b>Crosswalk-Finish:</b> {{ _splits?.crosswalkFull }}s</li>
+          }
+          @if (_splits?.full != null) {
+            <li><b>Full:</b> {{ _splits?.full }}s</li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  }

@@ -5,26 +5,32 @@
     <mat-label>Filter By Org</mat-label>
     <mat-select [(value)]="filteredOrg">
       <mat-option value="">(Show All)</mat-option>
-      <mat-option *ngFor="let o of orgList$ | async" value="{{o}}">{{o}}</mat-option>
+      @for (o of orgList$ | async; track o) {
+        <mat-option value="{{o}}">{{o}}</mat-option>
+      }
     </mat-select>
   </mat-form-field>
 
-  <ng-container *ngFor="let b of buggies$ | async">
-    <mat-card *ngIf="filteredOrg == '' || filteredOrg == b.org"
-              class="buggycard" (click)="select(b)">
-      <mat-card-header class="buggyheader">
-        <mat-card-title-group class="buggytitle">
-          <img *ngIf="b.smugmugSlug"
-               mat-card-md-image class="buggyimage"
-               src="{{b.smugmugSlug|buggyThumbnail}}">
-          <mat-card-subtitle>{{ b.name }}</mat-card-subtitle>
-          <mat-card-subtitle>{{ b.org }}</mat-card-subtitle>
-        </mat-card-title-group>
-      </mat-card-header>
-    </mat-card>
-  </ng-container>
+  @for (b of buggies$ | async; track b) {
+    @if (filteredOrg == '' || filteredOrg == b.org) {
+      <mat-card
+        class="buggycard" (click)="select(b)">
+        <mat-card-header class="buggyheader">
+          <mat-card-title-group class="buggytitle">
+            @if (b.smugmugSlug) {
+              <img
+                mat-card-md-image class="buggyimage"
+                src="{{b.smugmugSlug|buggyThumbnail}}">
+            }
+            <mat-card-subtitle>{{ b.name }}</mat-card-subtitle>
+            <mat-card-subtitle>{{ b.org }}</mat-card-subtitle>
+          </mat-card-title-group>
+        </mat-card-header>
+      </mat-card>
+    }
+  }
 </mat-dialog-content>
 
 <div mat-dialog-actions>
-    <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-button (click)="cancel()">Cancel</button>
 </div>
