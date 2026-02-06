@@ -1,5 +1,9 @@
-<div *ngIf="messageService.messages.length">
-    <div *ngFor='let message of messageService.messages'><b>{{message}}</b></div>
+@if (messageService.messages.length) {
+  <div>
+    @for (message of messageService.messages; track message) {
+      <div><b>{{message}}</b></div>
+    }
     <button mat-flat-button color="warn"
-            (click)="messageService.clear()">Dismiss Alerts</button>
-</div>
+    (click)="messageService.clear()">Dismiss Alerts</button>
+  </div>
+}

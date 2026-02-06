@@ -7,5 +7,9 @@
 </mat-form-field>
 <button mat-flat-button color="primary" style="margin: 8px" (click)="getCsv()">Get CSV</button>
 <hr>
-<data-view-entry *ngFor="let t of timers$ | async" [timer]="t"></data-view-entry>
-<div *ngIf="(timers$ | async)?.length == 0">No times from {{displayDate.value | date:'M/d/YYYY'}}.</div>
+  @for (t of timers$ | async; track t) {
+    <data-view-entry [timer]="t"></data-view-entry>
+  }
+  @if ((timers$ | async)?.length == 0) {
+    <div>No times from {{displayDate.value | date:'M/d/YYYY'}}.</div>
+  }
