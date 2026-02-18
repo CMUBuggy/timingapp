@@ -36,5 +36,13 @@
     "baseline-browser-mapping": "^2.9.19",
     "jasmine-core": "~4.6.0",
     "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "@angular/fire": {
+      "@angular/common": "$@angular/common",
+      "@angular/core": "$@angular/core",
+      "@angular/platform-browser": "$@angular/platform-browser",
+      "@angular/platform-browser-dynamic": "$@angular/platform-browser-dynamic"
+    }
   }
 }
