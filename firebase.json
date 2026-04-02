@@ -1,1 +1,11 @@
-{}
+{
+    "hosting": [ {
+        "target": "dev",
+        "public": "dist/buggy-timing/browser",
+
+        "rewrites": [ {
+            "source": "**",
+            "destination": "/index.html"
+        } ]
+    } ]
+}
