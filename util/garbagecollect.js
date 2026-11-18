@@ -2,11 +2,13 @@ const { exit } = require('process');
 
 // Firestore Init
 const admin = require('firebase-admin');
+const { getFirestore } = require('firebase-admin/firestore');
+
 admin.initializeApp({
-//  credential: admin.credential.applicationDefault()
-  credential: admin.credential.cert('./appengine-cred.json')
+//  credential: admin.applicationDefault()
+  credential: admin.cert('./appengine-cred.json')
 });
-const db = admin.firestore();
+const db = getFirestore();
 
 const myArgs = process.argv.slice(2);
 
